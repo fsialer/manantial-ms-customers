@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: manantial-ms-customers
+  jackson:
+    default-property-inclusion: NON_NULL
+  data:
+    mongodb:
+      uri: ${DB_HOST:mongodb://localhost:27017/customer_db?authSource=admin}
+      username: ${DB_USERNAME:root}
+      password: ${DB_PASSWORD:1234}
+    kafka:
+      bootstrap-servers: ${KAFKA_HOST:http://localhost:9092}
+      producer:
+        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, info, prometheus
+    endpoint:
+      prometheus:
+        enabled: true
+    metrics:
+      enable:
+        jvm: true
+        logback: true
+      export:
+        prometheus:
+          enabled: true
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    url: /v3/api-docs
+  openapi:
+    info:
+      title: Twitter Clone Posts Service API
+      version: 1.0.0
+      description: API documentation for the Twitter Clone Posts Service
