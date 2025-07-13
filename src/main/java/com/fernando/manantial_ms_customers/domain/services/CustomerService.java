@@ -1,0 +1,43 @@
+package com.fernando.manantial_ms_customers.domain.services;
+
+import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersUseCase;
+import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
+import com.fernando.manantial_ms_customers.application.ports.output.CustomerPersistencePort;
+import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
+import com.fernando.manantial_ms_customers.domain.models.Customer;
+import com.fernando.manantial_ms_customers.domain.strategy.CustomerRule;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase {
+
+    private final CustomerPersistencePort customerPersistencePort;
+    private final List<CustomerRule> listCustomerRule;
+
+    @Override
+    public Flux<Customer> getCustomers() {
+        return customerPersistencePort.getCustomers();
+    }
+
+    @Override
+    public Mono<Customer> save(Customer customer) {
+        List<String> listCodeRule=List.of("RULE001");
+        List<CustomerRule> rulesApplicable = listCustomerRule.stream()
+                .filter(rule -> listCodeRule.stream().anyMatch(rule::isApplicable))
+                .toList();
+
+        if(rulesApplicable.isEmpty()){
+            return Mono.error(new RuleStrategyException("Do not Exist any rule applicable"));
+        }
+
+        return Flux.fromIterable(rulesApplicable)
+                .concatMap(rule -> rule.validateRule(customer))
+                .then(customerPersistencePort.saveCustomer(customer));
+    }
+}

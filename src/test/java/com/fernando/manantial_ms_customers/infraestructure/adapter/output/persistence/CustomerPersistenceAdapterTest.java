@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,6 +65,29 @@ class CustomerPersistenceAdapterTest {
                 .verifyComplete();
         Mockito.verify(customerPersistenceMapper,times(1)).customerDocumenFluxtoToCustomerFlux(any(Flux.class));
         Mockito.verify(customerRepository,times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("When Information Customer Is Correct Expect Customer save correctly")
+    void When_InformationCustomerIsCorrect_Expect_CustomerSaveCorrectly(){
+        CustomerDocument customerDocument = TestUtilCustomer.buildMockCustomerDocument();
+        Customer customer = TestUtilCustomer.buildMockCustomer();
+        when(customerRepository.save(any(CustomerDocument.class))).thenReturn(Mono.just(customerDocument));
+        when(customerPersistenceMapper.customerToCustomerDocument(any(Customer.class))).thenReturn(customerDocument);
+        when(customerPersistenceMapper.customerDocumentMonoToCustomerMono(any(Mono.class))).thenReturn(Mono.just(customer));
+
+        Mono<Customer> customerMono=customerPersistenceAdapter.saveCustomer(customer);
+        StepVerifier.create(customerMono)
+                .expectNextMatches(customerMatch->
+                    customerMatch.getId().equals(customer.getId())
+                            && customerMatch.getName().equals(customer.getName())
+                            && customerMatch.getLastName().equals(customer.getLastName())
+                            && customerMatch.getAge().equals(customer.getAge())
+                            && customerMatch.getBirthDate().equals(customer.getBirthDate())
+                ).verifyComplete();
+        Mockito.verify(customerRepository,times(1)).save(any(CustomerDocument.class));
+        Mockito.verify(customerPersistenceMapper,times(1)).customerDocumentMonoToCustomerMono(any(Mono.class));
+        Mockito.verify(customerPersistenceMapper,times(1)).customerToCustomerDocument(any(Customer.class));
     }
 
 

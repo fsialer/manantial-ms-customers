@@ -1,6 +1,7 @@
 package com.fernando.manantial_ms_customers.Utils;
 
 import com.fernando.manantial_ms_customers.domain.models.Customer;
+import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.request.CustomerRequest;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.CustomerResponse;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.output.persistence.models.CustomerDocument;
 
@@ -12,7 +13,7 @@ public class TestUtilCustomer {
                 .id("541dikjd454dsplew")
                 .name("John")
                 .lastName("Doe")
-                .age(35)
+                .age(34)
                 .birthDate(LocalDate.of(1991,5,14))
                 .build();
     }
@@ -64,6 +65,15 @@ public class TestUtilCustomer {
                 .lastName("Doe")
                 .age(26)
                 .birthDate(LocalDate.of(1995,5,14))
+                .build();
+    }
+
+    public static CustomerRequest buildMockCustomerRequest(){
+        return CustomerRequest.builder()
+                .name("John")
+                .lastName("Doe")
+                .age(35)
+                .birthDate(LocalDate.of(1991,5,14))
                 .build();
     }
 }

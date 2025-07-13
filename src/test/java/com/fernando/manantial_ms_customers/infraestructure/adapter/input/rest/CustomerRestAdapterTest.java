@@ -2,9 +2,11 @@ package com.fernando.manantial_ms_customers.infraestructure.adapter.input.rest;
 
 import com.fernando.manantial_ms_customers.Utils.TestUtilCustomer;
 import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersUseCase;
+import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
 import com.fernando.manantial_ms_customers.domain.models.Customer;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.CustomerRestAdapter;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.mappers.CustomerRestMapper;
+import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.request.CustomerRequest;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.CustomerResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -30,6 +33,9 @@ class CustomerRestAdapterTest {
     
     @MockitoBean
     private CustomerRestMapper customerRestMapper;
+
+    @MockitoBean
+    private SaveCustomerUseCase saveCustomerUseCase;
 
 
     @Test
@@ -60,5 +66,32 @@ class CustomerRestAdapterTest {
 
         Mockito.verify(getCustomersUseCase,times(1)).getCustomers();
         Mockito.verify(customerRestMapper,times(1)).customerFluxToCustomerResponseFlux(any(Flux.class));
+    }
+
+    @Test
+    @DisplayName("When Information Ingress Customer Is Correct Expect Information Customer Saved Correctly")
+    void When_InformationIngressCustomerIsCorrect_Expect_InformationCustomerSavedWithResponse201(){
+        CustomerRequest customerRequest=TestUtilCustomer.buildMockCustomerRequest();
+        Customer customer = TestUtilCustomer.buildMockCustomer();
+        CustomerResponse customerResponse= TestUtilCustomer.buildMockCustomerResponse();
+        when(saveCustomerUseCase.save(any(Customer.class))).thenReturn(Mono.just(customer));
+        when(customerRestMapper.customerRequestToCustomer(any(CustomerRequest.class))).thenReturn(customer);
+        when(customerRestMapper.customerToCustomerResponse(any(Customer.class))).thenReturn(customerResponse);
+
+        webTestClient.post()
+                .uri("/v1/customers")
+                .bodyValue(customerRequest)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(customerResponse.id())
+                .jsonPath("$.name").isEqualTo(customerResponse.name())
+                .jsonPath("$.lastName").isEqualTo(customerResponse.lastName())
+                .jsonPath("$.age").isEqualTo(customerResponse.age())
+                .jsonPath("$.birthDate").isEqualTo(customerResponse.birthDate());
+
+        Mockito.verify(saveCustomerUseCase,times(1)).save(any(Customer.class));
+        Mockito.verify(customerRestMapper,times(1)).customerRequestToCustomer(any(CustomerRequest.class));
+        Mockito.verify(customerRestMapper,times(1)).customerToCustomerResponse(any(Customer.class));
     }
 }

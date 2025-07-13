@@ -40,6 +40,6 @@ springdoc:
     url: /v3/api-docs
   openapi:
     info:
-      title: Twitter Clone Posts Service API
+      title: Microservices customers
       version: 1.0.0
-      description: API documentation for the Twitter Clone Posts Service
+      description: API documentation for Microservice customers

@@ -12,15 +12,15 @@ import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
 public class CustomerPersistenceAdapter implements CustomerPersistencePort {
-    private CustomerPersistenceMapper customerPersistenceMapper;
-    private CustomerRepository customerRepository;
+    private final CustomerPersistenceMapper customerPersistenceMapper;
+    private final CustomerRepository customerRepository;
     @Override
     public Flux<Customer> getCustomers() {
         return customerPersistenceMapper.customerDocumenFluxtoToCustomerFlux(customerRepository.findAll());
     }
 
     @Override
-    public Mono<Customer> saveCustomer() {
-        return null;
+    public Mono<Customer> saveCustomer(Customer customer) {
+        return customerPersistenceMapper.customerDocumentMonoToCustomerMono(customerRepository.save(customerPersistenceMapper.customerToCustomerDocument(customer)));
     }
 }
