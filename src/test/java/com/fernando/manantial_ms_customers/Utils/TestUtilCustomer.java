@@ -17,6 +17,7 @@ public class TestUtilCustomer {
                 .lastName("Doe")
                 .age(34)
                 .birthDate(LocalDate.of(1991,5,14))
+                .lifeExpectancy(LocalDate.of(2067,5,14))
                 .build();
     }
 
@@ -27,6 +28,7 @@ public class TestUtilCustomer {
                 .lastName("Doe")
                 .age(29)
                 .birthDate(LocalDate.of(1994,5,14))
+                .lifeExpectancy(LocalDate.of(2067,5,14))
                 .build();
     }
 
@@ -37,6 +39,7 @@ public class TestUtilCustomer {
                 .lastName("Aguilar")
                 .age(30)
                 .birthDate(LocalDate.of(1995,5,14))
+                .lifeExpectancy(LocalDate.of(2067,5,14))
                 .build();
     }
 
@@ -67,6 +70,7 @@ public class TestUtilCustomer {
                 .lastName("Doe")
                 .age(34)
                 .birthDate(LocalDate.of(1991,5,14))
+                .lifeExpectancy(LocalDate.of(2067,5,14))
                 .build();
     }
 
@@ -77,6 +81,7 @@ public class TestUtilCustomer {
                 .lastName("Doe")
                 .age(30)
                 .birthDate(LocalDate.of(1995,5,14))
+                .lifeExpectancy(LocalDate.of(2067,5,14))
                 .build();
     }
 

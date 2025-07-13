@@ -5,4 +5,4 @@ import lombok.Builder;
 import java.time.LocalDate;
 
 @Builder
-public record CustomerResponse(String id, String name, String lastName, Integer age, LocalDate birthDate) {}
+public record CustomerResponse(String id, String name, String lastName, Integer age, LocalDate birthDate, LocalDate lifeExpectancy) {}

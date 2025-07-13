@@ -56,12 +56,14 @@ class CustomerServicesTest {
                      assertEquals(customer.getLastName(),customer1.getLastName());
                      assertEquals(customer.getAge(),customer1.getAge());
                      assertEquals(customer.getBirthDate(),customer1.getBirthDate());
+                     assertEquals(customer.getLifeExpectancy(),customer1.getLifeExpectancy());
                 })
                 .consumeNextWith(customer -> {
                     assertEquals(customer.getName(),customer2.getName());
                     assertEquals(customer.getLastName(),customer2.getLastName());
                     assertEquals(customer.getAge(),customer2.getAge());
                     assertEquals(customer.getBirthDate(),customer2.getBirthDate());
+                    assertEquals(customer.getLifeExpectancy(),customer2.getLifeExpectancy());
                 })
                 .verifyComplete();
         Mockito.verify(customerPersistencePort,times(1)).getCustomers();
