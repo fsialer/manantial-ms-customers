@@ -2,12 +2,15 @@ package com.fernando.manantial_ms_customers.infraestructure.adapter.input.rest;
 
 import com.fernando.manantial_ms_customers.Utils.TestUtilCustomer;
 import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersUseCase;
+import com.fernando.manantial_ms_customers.application.ports.input.GetMetricsUseCase;
 import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
 import com.fernando.manantial_ms_customers.domain.models.Customer;
+import com.fernando.manantial_ms_customers.domain.models.Metric;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.CustomerRestAdapter;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.mappers.CustomerRestMapper;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.request.CustomerRequest;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.CustomerResponse;
+import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.MetricResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -36,6 +39,9 @@ class CustomerRestAdapterTest {
 
     @MockitoBean
     private SaveCustomerUseCase saveCustomerUseCase;
+
+    @MockitoBean
+    private GetMetricsUseCase getMetricsUseCase;
 
 
     @Test
@@ -93,5 +99,24 @@ class CustomerRestAdapterTest {
         Mockito.verify(saveCustomerUseCase,times(1)).save(any(Customer.class));
         Mockito.verify(customerRestMapper,times(1)).customerRequestToCustomer(any(CustomerRequest.class));
         Mockito.verify(customerRestMapper,times(1)).customerToCustomerResponse(any(Customer.class));
+    }
+
+    @Test
+    @DisplayName("When Have Customers Available Expect Obtain Metric Of Average And Standard Deviation")
+    void When_HaveCustomersAvailable_Expect_ObtainMetricOfAverageAndStandardDeviation(){
+        MetricResponse metricResponse=TestUtilCustomer.buildMockMetricResponse();
+        when(getMetricsUseCase.getMetrics()).thenReturn(Mono.just(TestUtilCustomer.buildMockMetric()));
+        when(customerRestMapper.metricToMetricResponse(any(Metric.class))).thenReturn(metricResponse);
+
+        webTestClient.get()
+                .uri("/v1/customers/metrics")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.average").isEqualTo(metricResponse.average())
+                .jsonPath("$.standardDeviation").isEqualTo(metricResponse.standardDeviation());
+
+        Mockito.verify(getMetricsUseCase,times(1)).getMetrics();
+        Mockito.verify(customerRestMapper,times(1)).metricToMetricResponse(any(Metric.class));
     }
 }

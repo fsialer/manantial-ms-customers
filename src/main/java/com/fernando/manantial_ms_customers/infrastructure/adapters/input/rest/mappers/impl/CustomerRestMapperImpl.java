@@ -1,9 +1,11 @@
 package com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.mappers.impl;
 
 import com.fernando.manantial_ms_customers.domain.models.Customer;
+import com.fernando.manantial_ms_customers.domain.models.Metric;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.mappers.CustomerRestMapper;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.request.CustomerRequest;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.CustomerResponse;
+import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.MetricResponse;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -41,6 +43,14 @@ public class CustomerRestMapperImpl implements CustomerRestMapper {
                 .lastName(customer.getLastName())
                 .age(customer.getAge())
                 .birthDate(customer.getBirthDate())
+                .build();
+    }
+
+    @Override
+    public MetricResponse metricToMetricResponse(Metric metric) {
+        return MetricResponse.builder()
+                .average(metric.getAverage())
+                .standardDeviation(metric.getStandardDeviation())
                 .build();
     }
 }

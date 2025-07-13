@@ -1,10 +1,12 @@
 package com.fernando.manantial_ms_customers.domain.services;
 
 import com.fernando.manantial_ms_customers.Utils.TestUtilCustomer;
+import com.fernando.manantial_ms_customers.application.ports.output.CalculateMetricsPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerPersistencePort;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerRuleException;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
 import com.fernando.manantial_ms_customers.domain.models.Customer;
+import com.fernando.manantial_ms_customers.domain.models.Metric;
 import com.fernando.manantial_ms_customers.domain.strategy.CompareAgeWithAgeOfBirthDate;
 import com.fernando.manantial_ms_customers.domain.strategy.CustomerRule;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +24,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -33,6 +35,9 @@ class CustomerServicesTest {
 
     @Mock
     private List<CustomerRule> listCustomerRule;
+
+    @Mock
+    private CalculateMetricsPort calculateMetricsPort;
 
     @InjectMocks
     private CustomerService customerService;
@@ -112,5 +117,28 @@ class CustomerServicesTest {
                 .verify();
 
         Mockito.verify(customerPersistencePort,times(0)).saveCustomer(any(Customer.class));
+    }
+
+    @Test
+    @DisplayName("When Have Customer Available Expect CalculateMatrics")
+    void When_HaveCustomerAvailable_Expect_CalculateMatrics(){
+        Customer customer1 = TestUtilCustomer.buildMockCustomer();
+        Customer customer2 = TestUtilCustomer.buildMockCustomer2();
+        Customer customer3 = TestUtilCustomer.buildMockCustomer3();
+        Flux<Customer> customers=Flux.just(customer1,customer2,customer3);
+        when(customerPersistencePort.getCustomers()).thenReturn(customers);
+        Mono<Metric> metricMono=customerService.getMetrics();
+        when(calculateMetricsPort.calculateAverage(anyList())).thenReturn(31.0);
+        when(calculateMetricsPort.calculateStandardDeviation(anyList(),anyDouble())).thenReturn(4.666666666666667);
+
+        StepVerifier.create(metricMono)
+                .consumeNextWith(metric->{
+                    assertEquals(31.0, metric.getAverage());
+                    assertEquals(4.666666666666667, metric.getStandardDeviation());
+                })
+                .verifyComplete();
+        Mockito.verify(customerPersistencePort,times(1)).getCustomers();
+        Mockito.verify(calculateMetricsPort,times(1)).calculateAverage(anyList());
+        Mockito.verify(calculateMetricsPort,times(1)).calculateStandardDeviation(anyList(),anyDouble());
     }
 }

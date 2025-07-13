@@ -1,10 +1,12 @@
 package com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest;
 
 import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersUseCase;
+import com.fernando.manantial_ms_customers.application.ports.input.GetMetricsUseCase;
 import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.mappers.CustomerRestMapper;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.request.CustomerRequest;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.CustomerResponse;
+import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.MetricResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -27,6 +29,7 @@ public class CustomerRestAdapter {
     private final GetCustomersUseCase getCustomersUseCase;
     private final SaveCustomerUseCase saveCustomerUseCase;
     private final CustomerRestMapper customerRestMapper;
+    private final GetMetricsUseCase getMetricsUseCase;
 
     @GetMapping
     @Operation(summary = "Find all customer available")
@@ -46,5 +49,12 @@ public class CustomerRestAdapter {
                         return Mono.just(ResponseEntity.created(URI.create(location)).body(customerRestMapper.customerToCustomerResponse(customer)));
                 }
         );
+    }
+
+    @GetMapping("/metrics")
+    @Operation(summary = "Get metrics")
+    @ApiResponse(responseCode = "200", description = "Obtain metric about average and standard Deviation of age customers")
+    public Mono<ResponseEntity<MetricResponse>> getMetrics(){
+        return getMetricsUseCase.getMetrics().flatMap(metrics->Mono.just(ResponseEntity.ok(customerRestMapper.metricToMetricResponse(metrics))));
     }
 }
