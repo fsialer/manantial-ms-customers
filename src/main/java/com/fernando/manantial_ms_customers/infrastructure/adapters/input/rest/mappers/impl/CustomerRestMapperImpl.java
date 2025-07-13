@@ -20,6 +20,7 @@ public class CustomerRestMapperImpl implements CustomerRestMapper {
                             .name(customer.getName())
                             .age(customer.getAge())
                             .birthDate(customer.getBirthDate())
+                            .lifeExpectancy(customer.getLifeExpectancy())
                             .build()
             );
         });

@@ -26,7 +26,10 @@ public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase
 
     @Override
     public Flux<Customer> getCustomers() {
-        return customerPersistencePort.getCustomers();
+        return customerPersistencePort.getCustomers().flatMap(customer->{
+            customer.setLifeExpectancy(customer.getBirthDate().plusYears(76));
+            return Flux.just(customer);
+        });
     }
 
     @Override

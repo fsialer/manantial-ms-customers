@@ -15,4 +15,5 @@ public class Customer {
     private String lastName;
     private Integer age;
     private LocalDate birthDate;
+    private LocalDate lifeExpectancy;
 }

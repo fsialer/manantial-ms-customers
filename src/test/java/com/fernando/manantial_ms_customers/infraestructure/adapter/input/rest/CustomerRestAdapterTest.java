@@ -45,7 +45,7 @@ class CustomerRestAdapterTest {
 
 
     @Test
-    @DisplayName("When_RequestInformationCustomer_Expect_AListCustomersAvailable")
+    @DisplayName("When Request Information Customer Expect A List Customers Available")
     void When_RequestInformationCustomer_Expect_AListCustomersAvailable(){
         CustomerResponse customerResponse1= TestUtilCustomer.buildMockCustomerResponse();
         CustomerResponse customerResponse2= TestUtilCustomer.buildMockCustomerResponse2();
@@ -64,11 +64,13 @@ class CustomerRestAdapterTest {
                 .jsonPath("$[0].lastName").isEqualTo(customerResponse1.lastName())
                 .jsonPath("$[0].age").isEqualTo(customerResponse1.age())
                 .jsonPath("$[0].birthDate").isEqualTo(customerResponse1.birthDate())
+                .jsonPath("$[0].lifeExpectancy").isEqualTo(customerResponse1.lifeExpectancy())
                 .jsonPath("$[1].id").isEqualTo(customerResponse2.id())
                 .jsonPath("$[1].name").isEqualTo(customerResponse2.name())
                 .jsonPath("$[1].lastName").isEqualTo(customerResponse2.lastName())
                 .jsonPath("$[1].age").isEqualTo(customerResponse2.age())
-                .jsonPath("$[1].birthDate").isEqualTo(customerResponse2.birthDate());
+                .jsonPath("$[1].birthDate").isEqualTo(customerResponse2.birthDate())
+                .jsonPath("$[1].lifeExpectancy").isEqualTo(customerResponse2.lifeExpectancy());
 
         Mockito.verify(getCustomersUseCase,times(1)).getCustomers();
         Mockito.verify(customerRestMapper,times(1)).customerFluxToCustomerResponseFlux(any(Flux.class));
