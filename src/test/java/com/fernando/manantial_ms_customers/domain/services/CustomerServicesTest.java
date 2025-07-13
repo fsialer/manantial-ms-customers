@@ -2,6 +2,7 @@ package com.fernando.manantial_ms_customers.domain.services;
 
 import com.fernando.manantial_ms_customers.Utils.TestUtilCustomer;
 import com.fernando.manantial_ms_customers.application.ports.output.CalculateMetricsPort;
+import com.fernando.manantial_ms_customers.application.ports.output.CustomerEventPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerPersistencePort;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerRuleException;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
@@ -25,8 +26,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CustomerServicesTest {
@@ -38,6 +38,9 @@ class CustomerServicesTest {
 
     @Mock
     private CalculateMetricsPort calculateMetricsPort;
+
+    @Mock
+    private CustomerEventPort customerEventPort;
 
     @InjectMocks
     private CustomerService customerService;
@@ -75,6 +78,7 @@ class CustomerServicesTest {
         Customer customer1 = TestUtilCustomer.buildMockCustomer();
         when(customerPersistencePort.saveCustomer(any(Customer.class))).thenReturn(Mono.just(customer1));
         when(listCustomerRule.stream()).thenReturn(Stream.of(new CompareAgeWithAgeOfBirthDate()));
+        doNothing().when(customerEventPort).publishCustomerSaved(any(Customer.class));
         Mono<Customer> customerMono= customerService.save(customer1);
 
         StepVerifier.create(customerMono)
@@ -87,6 +91,7 @@ class CustomerServicesTest {
                 .verifyComplete();
 
         Mockito.verify(customerPersistencePort,times(1)).saveCustomer(any(Customer.class));
+        Mockito.verify(customerEventPort,times(1)).publishCustomerSaved(any(Customer.class));
     }
 
 
@@ -104,6 +109,7 @@ class CustomerServicesTest {
                 .verify();
 
         Mockito.verify(customerPersistencePort,times(1)).saveCustomer(any(Customer.class));
+        Mockito.verify(customerEventPort,times(0)).publishCustomerSaved(any(Customer.class));
     }
 
     @Test
@@ -119,6 +125,7 @@ class CustomerServicesTest {
                 .verify();
 
         Mockito.verify(customerPersistencePort,times(0)).saveCustomer(any(Customer.class));
+        Mockito.verify(customerEventPort,times(0)).publishCustomerSaved(any(Customer.class));
     }
 
     @Test

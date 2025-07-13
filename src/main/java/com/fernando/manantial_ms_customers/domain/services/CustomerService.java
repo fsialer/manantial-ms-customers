@@ -4,12 +4,14 @@ import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersU
 import com.fernando.manantial_ms_customers.application.ports.input.GetMetricsUseCase;
 import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
 import com.fernando.manantial_ms_customers.application.ports.output.CalculateMetricsPort;
+import com.fernando.manantial_ms_customers.application.ports.output.CustomerEventPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerPersistencePort;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
 import com.fernando.manantial_ms_customers.domain.models.Customer;
 import com.fernando.manantial_ms_customers.domain.models.Metric;
 import com.fernando.manantial_ms_customers.domain.strategy.CustomerRule;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,6 +25,7 @@ public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase
     private final CustomerPersistencePort customerPersistencePort;
     private final List<CustomerRule> listCustomerRule;
     private final CalculateMetricsPort calculateMetricsPort;
+    private final CustomerEventPort customerEventPort;
 
     @Override
     public Flux<Customer> getCustomers() {
@@ -45,7 +48,7 @@ public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase
 
         return Flux.fromIterable(rulesApplicable)
                 .concatMap(rule -> rule.validateRule(customer))
-                .then(customerPersistencePort.saveCustomer(customer));
+                .then(customerPersistencePort.saveCustomer(customer).doOnSuccess(customerEventPort::publishCustomerSaved));
     }
 
     @Override

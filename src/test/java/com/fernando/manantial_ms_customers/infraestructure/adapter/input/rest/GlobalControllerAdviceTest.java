@@ -130,4 +130,18 @@ class GlobalControllerAdviceTest {
         Mockito.verify(customerRestMapper,times(0)).customerToCustomerResponse(any(Customer.class));
     }
 
+    @Test
+    @DisplayName("Expect Exception When OccurredAnError")
+    void Expect_Exception_When_OccurredAnError(){
+        webTestClient.get()
+                .uri("/v1/customers/unknown")
+                .exchange()
+                .expectStatus().is5xxServerError()
+                .expectBody(ErrorResponse.class)
+                .value(response->{
+                    assertEquals(response.code(),CUSTOMER_INTERNAL_SERVER_ERROR.getCode());
+                    assertEquals(response.message(),CUSTOMER_INTERNAL_SERVER_ERROR.getMessage());
+                });
+    }
+
 }
