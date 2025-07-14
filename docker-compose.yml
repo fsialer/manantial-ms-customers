@@ -52,7 +52,7 @@ services:
       - keycloak_data:/opt/keycloak/data
 
   customer-service:
-    image: feralexis007/manantial-customers-service:dev-78bf006
+    image: feralexis007/manantial-customers-service:dev-c992d7c
     container_name: customer-service
     ports:
       - "8081:8081"
