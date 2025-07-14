@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway-server
+  template:
+    metadata:
+      labels:
+        app: gateway-server
+    spec:
+      containers:
+        - image: feralexis007/manantial-gateway:prod-afd5e19
+          name: gateway-server
+          ports:
+            - containerPort: 8090
+          env:
+            - name: AUTH_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  name: gateway-server
+                  key: auth_server
+            - name: CUSTOMER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: gateway-server
+                  key: customers_url
+            - name: CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-secrets
+                  key: keycloak_client_id

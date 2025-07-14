@@ -1,0 +1,11 @@
+groups:
+  - name: CPU
+    rules:
+      - alert: state_cpu
+        expr: system_cpu_usage{instance="customer-service:8081", job="customer-service"}>0.5
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 50% for more than 5 seconds."

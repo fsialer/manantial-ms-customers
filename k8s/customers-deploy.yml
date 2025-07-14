@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customers-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: customers-service
+  template:
+    metadata:
+      labels:
+        app: customers-service
+    spec:
+      containers:
+        - image: feralexis007/manantial-customers-service:dev-0cbbdac
+          name: customers-service
+          ports:
+            - containerPort: 8081
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: customers-service
+                  key: db_host
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secrets
+                  key: mongo_user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secrets
+                  key: mongo_password
+            - name: KAFKA_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: customers-service
+                  key: kafka_host

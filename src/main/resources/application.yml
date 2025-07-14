@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   application:
@@ -11,10 +11,10 @@ spring:
       uri: ${DB_HOST:mongodb://localhost:27017/customer_db?authSource=admin}
       username: ${DB_USERNAME:root}
       password: ${DB_PASSWORD:1234}
-    kafka:
-      bootstrap-servers: ${KAFKA_HOST:http://localhost:9092}
-      producer:
-        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST:localhost:9092}
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 management:
   endpoints:
     web:
@@ -40,6 +40,6 @@ springdoc:
     url: /v3/api-docs
   openapi:
     info:
-      title: Twitter Clone Posts Service API
+      title: Microservices customers
       version: 1.0.0
-      description: API documentation for the Twitter Clone Posts Service
+      description: API documentation for Microservice customers

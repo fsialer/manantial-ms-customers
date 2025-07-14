@@ -1,0 +1,172 @@
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - customers-net
+    restart: unless-stopped
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_ADVERTISED_HOST_NAME}
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - customers-net
+    restart: unless-stopped
+
+  mongo6:
+    image: mongo:6.0
+    container_name: mongo6
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo_vol:/data/db
+    networks:
+      - customers-net
+    restart: unless-stopped
+
+  keycloak-server:
+    image: quay.io/keycloak/keycloak:24.0.2
+    container_name: keycloak_2
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    command: ["start-dev"]
+    ports:
+      - "8080:8080"
+    networks:
+      - customers-net
+    restart: unless-stopped
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+
+  customer-service:
+    image: feralexis007/manantial-customers-service:dev-c992d7c
+    container_name: customer-service
+    ports:
+      - "8081:8081"
+    environment:
+      DB_HOST: ${MONGO_CUSTOMER_HOST}
+      DB_USERNAME: ${MONGO_USER}
+      DB_PASSWORD: ${MONGO_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
+    depends_on:
+      - mongo6
+      - kafka
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 90s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    networks:
+      - customers-net
+
+  consumer-service:
+    image:
+      feralexis007/manantial-ms-consumer:prod-9391c65
+    container_name: consumer-service
+    ports:
+      - "8099:8099"
+    environment:
+      DB_HOST: ${MONGO_CONSUMER_HOST}
+      DB_USERNAME: ${MONGO_USER}
+      DB_PASSWORD: ${MONGO_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
+    depends_on:
+      - mongo6
+      - kafka
+    restart: unless-stopped
+    networks:
+      - customers-net
+
+  manantial-gateway:
+    image: feralexis007/manantial-gateway:prod-afd5e19
+    container_name: manantial-gateway
+    environment:
+      AUTH_SERVER: ${AUTH_SERVER}
+      CUSTOMER_URL: ${CUSTOMER_URL}
+      CLIENT_ID: ${CLIENT_ID}
+    ports:
+      - "8090:8090"
+    networks:
+      - customers-net
+    depends_on:
+      - keycloak-server
+      - customer-service
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/rules.yml:/etc/prometheus/rules.yml
+    networks:
+      - customers-net
+    depends_on:
+      - alertmanager
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-vol:/var/lib/grafana
+    networks:
+      - customers-net
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  alertmanager:
+    container_name: alertmanager
+    image: prom/alertmanager:v0.27.0
+    restart: unless-stopped
+    volumes:
+      - ./alerts/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    ports:
+      - "9093:9093"
+    networks:
+      - customers-net
+
+  alertmanager-discord-relay:
+    container_name: alertmanager-discord-relay
+    image: benjojo/alertmanager-discord:latest
+    environment:
+      DISCORD_WEBHOOK: ${DISCORD_WEBHOOK}
+      DISCORD_USERNAME: ${DISCORD_USERNAME}
+      DEBUG: true
+    networks:
+      - customers-net
+    depends_on:
+      - alertmanager
+    restart: unless-stopped
+
+networks:
+  customers-net:
+    driver: bridge
+
+volumes:
+  grafana-vol:
+  mongo_vol:
+  keycloak_data:
