@@ -71,6 +71,7 @@ Crea los roles **admin** y **user** (Roles obligatorios)
 5. Asignar roles Usuario
 ![img14.png](./images/img_14.png)
 ![img15.png](./images/img_15.png)
+Procura filtrar por client y busca los roles.
 ![img16.png](./images/img_16.png)
 6. Crear contraseña
 ![img18.png](./images/img_18.png)
