@@ -1,0 +1,9 @@
+route:
+  group_wait: 5s
+  receiver: discord
+
+receivers:
+  - name: discord
+    webhook_configs:
+      - url: 'http://alertmanager-discord-relay:9094'
+        send_resolved: false
