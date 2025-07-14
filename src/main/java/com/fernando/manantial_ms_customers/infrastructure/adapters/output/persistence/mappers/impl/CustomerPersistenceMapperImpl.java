@@ -40,6 +40,7 @@ public class CustomerPersistenceMapperImpl implements CustomerPersistenceMapper 
             Mono.just(Customer.builder()
                             .id(customer.getId())
                             .name(customer.getName())
+                            .lastName(customer.getLastName())
                             .age(customer.getAge())
                             .birthDate(customer.getBirthDate())
                     .build())

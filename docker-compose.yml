@@ -52,7 +52,7 @@ services:
       - keycloak_data:/opt/keycloak/data
 
   customer-service:
-    image: manantial-ms-customers:latest
+    image: feralexis007/manantial-customers-service:dev-78bf006
     container_name: customer-service
     ports:
       - "8081:8081"
@@ -74,8 +74,26 @@ services:
     networks:
       - customers-net
 
+  consumer-service:
+    image:
+      feralexis007/manantial-ms-consumer:prod-9391c65
+    container_name: consumer-service
+    ports:
+      - "8099:8099"
+    environment:
+      DB_HOST: ${MONGO_CONSUMER_HOST}
+      DB_USERNAME: ${MONGO_USER}
+      DB_PASSWORD: ${MONGO_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
+    depends_on:
+      - mongo6
+      - kafka
+    restart: unless-stopped
+    networks:
+      - customers-net
+
   manantial-gateway:
-    image: manantial-gateway:latest
+    image: feralexis007/manantial-gateway:prod-afd5e19
     container_name: manantial-gateway
     environment:
       AUTH_SERVER: ${AUTH_SERVER}
