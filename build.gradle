@@ -77,7 +77,10 @@ tasks.jacocoTestReport {
 				"**/*MapperImpl.class",
 				'**/ManantialMsCustomersApplication.*',
 				"**/ManantialMsCustomersApplicationTests.*",
-				"**/validation/*.*"
+				"**/validation/*.*",
+				"**/alerts/*",
+				"**/alertsmanager/*.*",
+				"**/prometheus/*.*"
 		]) }))
 	}
 }

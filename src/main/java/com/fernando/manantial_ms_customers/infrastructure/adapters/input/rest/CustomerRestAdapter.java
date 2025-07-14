@@ -9,7 +9,6 @@ import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.mo
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.MetricResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

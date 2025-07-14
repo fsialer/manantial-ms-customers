@@ -13,8 +13,8 @@ import reactor.core.publisher.Flux;
 public class CustomerRestMapperImpl implements CustomerRestMapper {
     @Override
     public Flux<CustomerResponse> customerFluxToCustomerResponseFlux(Flux<Customer> customerFlux) {
-        return customerFlux.flatMap(customer->{
-            return Flux.just(
+        return customerFlux.flatMap(customer->
+             Flux.just(
                     CustomerResponse.builder()
                             .id(customer.getId())
                             .name(customer.getName())
@@ -22,8 +22,8 @@ public class CustomerRestMapperImpl implements CustomerRestMapper {
                             .birthDate(customer.getBirthDate())
                             .lifeExpectancy(customer.getLifeExpectancy())
                             .build()
-            );
-        });
+            )
+        );
     }
 
     @Override

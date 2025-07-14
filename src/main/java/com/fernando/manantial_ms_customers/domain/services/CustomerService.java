@@ -11,7 +11,6 @@ import com.fernando.manantial_ms_customers.domain.models.Customer;
 import com.fernando.manantial_ms_customers.domain.models.Metric;
 import com.fernando.manantial_ms_customers.domain.strategy.CustomerRule;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
