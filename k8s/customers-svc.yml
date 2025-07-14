@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: customers-service
+spec:
+  ports:
+    - port: 8081
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    app: customers-service
+  type: ClusterIP
+  # ClusterIP => PARA COMUNICACION DENTROD DEL CLUSTER
+  # NODEPORT => PARA EXPONER UN SERVICIO MEDIANTE UN PUERTO DEL CLUSTER
+  # LOADBALANCER => EXPONE O TE ORTORGA UNA IP EXTERNA MEDIANTE LA CUAL TE PUEDAS COMUNICAR

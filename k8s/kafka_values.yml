@@ -1,0 +1,13 @@
+replicaCount: 1
+zookeeper:
+  replicaCount: 1
+  auth:
+    enabled: false
+auth:
+  enabled: false
+listeners:
+  client:
+    protocol: PLAINTEXT
+configurationOverrides:
+  "auto.create.topics.enable": "true"
+  "log.retention.hours": "168"
