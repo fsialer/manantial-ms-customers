@@ -2,6 +2,14 @@
 # MICROSERVICIO DE CLIENTES
 Este microservicio de clientes se encarga de registrar, consultar y obtener metricas.
 
+## TABLA DE RECURSOS GATEWAY
+| NOMBRE                           | RUTA                      | PETICION | PARAMETROS                                             | CUERPO                                                                                                                | 
+|----------------------------------|---------------------------|----------|--------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------| 
+| Listar clientes                  | /api/v1/customers         | GET      | NINGUNO                                                | NINGUNO                                                                                                               |
+| Obtener metricas de los clientes | /api/v1/customers/metrics | GET      | NINGUNO                                                | NINGUNO                                                                                                               |
+| Guardar clientes                 | /api/v1/customers    | POST     | NINGUNO                                                | {<br/>"names":"Jhon"<br/>"lastNames":"Doe"<br/>"email":"jhondoe@example.com"<br/>"userId":"cde8c071a420424abf2"<br/>} |
+
+
 ## TABLA DE RECURSOS
 | NOMBRE                         | RUTA                   | PETICION |  
 |--------------------------------|------------------------|----------|
@@ -63,6 +71,7 @@ Crea los roles **admin** y **user** (Roles obligatorios)
 5. Asignar roles Usuario
 ![img14.png](./images/img_14.png)
 ![img15.png](./images/img_15.png)
+Procura filtrar por client y busca los roles.
 ![img16.png](./images/img_16.png)
 6. Crear contraseña
 ![img18.png](./images/img_18.png)
@@ -70,7 +79,6 @@ Crea los roles **admin** y **user** (Roles obligatorios)
 ![img22.png](./images/img_22.png)
 ![img23.png](./images/img_23.png)
 7. Obtener client id  y client secret
-![img23.png](./images/img_23.png)
 ![img24.png](./images/img_24.png)
 ![img25.png](./images/img_25.png)
 ![img25.png](./images/img_26.png)
