@@ -10,8 +10,8 @@ import reactor.core.publisher.Mono;
 @Component
 public class CustomerPersistenceMapperImpl implements CustomerPersistenceMapper {
     public Flux<Customer> customerDocumenFluxtoToCustomerFlux(Flux<CustomerDocument> customerDocumentFlux){
-        return customerDocumentFlux.flatMap(customer->{
-            return Flux.just(
+        return customerDocumentFlux.flatMap(customer->
+             Flux.just(
                     Customer.builder()
                             .id(customer.getId())
                             .name(customer.getName())
@@ -19,8 +19,8 @@ public class CustomerPersistenceMapperImpl implements CustomerPersistenceMapper 
                             .age(customer.getAge())
                             .birthDate(customer.getBirthDate())
                             .build()
-            );
-        });
+            )
+        );
 
     }
 
@@ -36,13 +36,13 @@ public class CustomerPersistenceMapperImpl implements CustomerPersistenceMapper 
 
     @Override
     public Mono<Customer> customerDocumentMonoToCustomerMono(Mono<CustomerDocument> customerDocumentMono) {
-        return customerDocumentMono.flatMap(customer->{
-            return Mono.just(Customer.builder()
+        return customerDocumentMono.flatMap(customer->
+            Mono.just(Customer.builder()
                             .id(customer.getId())
                             .name(customer.getName())
                             .age(customer.getAge())
                             .birthDate(customer.getBirthDate())
-                    .build());
-        });
+                    .build())
+        );
     }
 }

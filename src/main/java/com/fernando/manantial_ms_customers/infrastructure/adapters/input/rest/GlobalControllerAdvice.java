@@ -4,7 +4,6 @@ package com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerRuleException;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.ErrorResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
