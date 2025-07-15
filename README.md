@@ -3,12 +3,12 @@
 Este microservicio de clientes se encarga de registrar, consultar y obtener metricas.
 
 ## TABLA DE RECURSOS GATEWAY
-| NOMBRE                           | RUTA                      | PETICION | PARAMETROS                                             | CUERPO                                                                                                                | 
-|----------------------------------|---------------------------|----------|--------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------| 
-| Listar clientes                  | /api/v1/customers         | GET      | NINGUNO                                                | NINGUNO                                                                                                               |
-| Obtener metricas de los clientes | /api/v1/customers/metrics | GET      | NINGUNO                                                | NINGUNO                                                                                                               |
-| Guardar clientes                 | /api/v1/customers    | POST     | NINGUNO                                                | {<br/>"names":"Jhon"<br/>"lastNames":"Doe"<br/>"email":"jhondoe@example.com"<br/>"userId":"cde8c071a420424abf2"<br/>} |
-
+| NOMBRE                           | RUTA                      | PETICION | PARAMETROS                                             | CUERPO                                                                                   | 
+|----------------------------------|---------------------------|----------|--------------------------------------------------------|------------------------------------------------------------------------------------------| 
+| Listar clientes                  | /api/v1/customers         | GET      | NINGUNO                                                | NINGUNO                                                                                  |
+| Obtener metricas de los clientes | /api/v1/customers/metrics | GET      | NINGUNO                                                | NINGUNO                                                                                  |
+| Guardar clientes                 | /api/v1/customers    | POST     | NINGUNO                                                | {<br/>"name":"Jhon"<br/>"lastName":"Doe"<br/>"age":34<br/>"birthDate":"1991-05-01"<br/>} |
+[Reposito: Gateway](https://github.com/fsialer/manantial-gateway)
 
 ## TABLA DE RECURSOS
 | NOMBRE                         | RUTA                   | PETICION |  
