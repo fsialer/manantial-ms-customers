@@ -31,7 +31,7 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(CustomerRuleException.class)
     public Mono<ErrorResponse> handleCustomerRuleException(
             CustomerRuleException e) {
-
+        log.warn("⚠️ Warning by rule ({}): {}",CUSTOMER_RULE.getCode(),e.getMessage());
         return Mono.just(ErrorResponse.builder()
                 .code(CUSTOMER_RULE.getCode())
                 .type(FUNCTIONAL)
@@ -45,7 +45,7 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(RuleStrategyException.class)
     public Mono<ErrorResponse> handleRuleStrategyException(
             RuleStrategyException e) {
-
+        log.warn("⚠️ Warning by code rule ({}): {}",CUSTOMER_RULE_STRATEGY.getCode(),e.getMessage());
         return Mono.just(ErrorResponse.builder()
                 .code(CUSTOMER_RULE_STRATEGY.getCode())
                 .type(FUNCTIONAL)
@@ -60,6 +60,7 @@ public class GlobalControllerAdvice {
     public Mono<ErrorResponse> handleWebExchangeBindException(
             WebExchangeBindException e) {
         BindingResult bindingResult = e.getBindingResult();
+        log.warn("⚠️ warning parameter({}): {}",CUSTOMER_BAD_PARAMETER.getCode(),CUSTOMER_BAD_PARAMETER.getMessage());
         return Mono.just(ErrorResponse.builder()
                 .code(CUSTOMER_BAD_PARAMETER.getCode())
                 .type(FUNCTIONAL)
@@ -74,6 +75,7 @@ public class GlobalControllerAdvice {
     @ResponseStatus(INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public Mono<ErrorResponse> handleException(Exception e) {
+        log.error("❌ Error ({}): {}",CUSTOMER_INTERNAL_SERVER_ERROR.getCode(),e.getMessage());
         return Mono.just(ErrorResponse.builder()
                 .code(CUSTOMER_INTERNAL_SERVER_ERROR.getCode())
                 .type(SYSTEM)

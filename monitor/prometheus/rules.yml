@@ -1,0 +1,29 @@
+groups:
+  - name: CPU
+    rules:
+      - alert: state_cpu_medium
+        expr: ((system_cpu_usage/100)*system_cpu_count)>=0.4 and ((system_cpu_usage/100)*system_cpu_count)<0.8
+        for: 5s
+        labels:
+          severity: Warning
+        annotations:
+          summary: "Uso de la CPU en el nodo {{$labels.instance}} es moderado"
+          description: "El uso de la CPU en el nodo {{$labels.instance}} es moderado ({{$value}})."
+      - alert: state_cpu_high
+        expr: ((system_cpu_usage/100)*system_cpu_count)>=0.8 and ((system_cpu_usage/100)*system_cpu_count)<=1
+        for: 5s
+        labels:
+          severity: Critical
+        annotations:
+          summary: "Uso de la CPU en el nodo {{$labels.instance}} es excesivo"
+          description: "El uso de la CPU en el nodo {{$labels.instance}} es excesivo ({{$value}}) ."
+  - name: SERVICES
+    rules:
+      - alert: state_services_down
+        expr: up == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "El nodo {{$labels.instance}} esta abajo."
+          description: "El nodo {{$labels.instance}} no esta respondiendo a las peticiones de Prometheus."

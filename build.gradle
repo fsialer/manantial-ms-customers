@@ -80,7 +80,8 @@ tasks.jacocoTestReport {
 				"**/validation/*.*",
 				"**/alerts/*",
 				"**/alertsmanager/*.*",
-				"**/prometheus/*.*"
+				"**/prometheus/*.*",
+				'**/config/*'
 		]) }))
 	}
 }

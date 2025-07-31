@@ -27,7 +27,7 @@ gradle test jacocoTestReport
 ## INDICACIONES DE DESPLIEGUE LOCAL
 1. Crear archivo .env
 ````bash
-toach .env
+toach .env.example
 ````
 2. Copiar configuracion base en el archivo .env
 ````declarative
