@@ -11,6 +11,7 @@ import com.fernando.manantial_ms_customers.domain.models.Customer;
 import com.fernando.manantial_ms_customers.domain.models.Metric;
 import com.fernando.manantial_ms_customers.domain.strategy.CustomerRule;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase, GetMetricsUseCase {
 
     private final CustomerPersistencePort customerPersistencePort;
@@ -47,7 +49,9 @@ public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase
 
         return Flux.fromIterable(rulesApplicable)
                 .concatMap(rule -> rule.validateRule(customer))
-                .then(customerPersistencePort.saveCustomer(customer).doOnSuccess(customerEventPort::publishCustomerSaved));
+                .then(customerPersistencePort.saveCustomer(customer)
+                        .doOnSuccess(customerEventPort::publishCustomerSaved))
+                .doOnError(e->log.error("Error: {}",e.getMessage()));
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.fernando.manantial_ms_customers.infrastructure.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 
 @Configuration
 @RequiredArgsConstructor
+@Slf4j
 public class KafkaAdminConfig {
 
     private final KafkaProperties kafkaProperties;

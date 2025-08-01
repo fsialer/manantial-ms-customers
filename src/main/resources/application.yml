@@ -12,8 +12,9 @@ spring:
       username: ${DB_USERNAME:root}
       password: ${DB_PASSWORD:1234}
   kafka:
-    producer:
-      bootstrap-servers: ${KAFKA_HOST:localhost:9092}
+    bootstrap-servers: ${KAFKA_HOST:localhost:9092}
+#    producer:
+
       #value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 management:
   endpoints:
@@ -43,3 +44,6 @@ springdoc:
       title: Microservices customers
       version: 1.0.0
       description: API documentation for Microservice customers
+logging:
+  file:
+    name: ./logs/app.log

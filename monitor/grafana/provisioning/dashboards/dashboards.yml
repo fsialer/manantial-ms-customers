@@ -1,0 +1,18 @@
+apiVersion: 1
+
+providers:
+  - name: 'Java Dashboards'
+    folder: 'Java Metrics'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/dashboards/java
+
+  - name: 'Microservices Dashboards'
+    folder: 'Microservices'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/dashboards/microservices

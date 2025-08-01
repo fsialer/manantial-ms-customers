@@ -1,4 +1,6 @@
 .env
+**/*.log
+**/loki-data/**
 HELP.md
 .gradle
 build/
