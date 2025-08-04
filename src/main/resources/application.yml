@@ -13,9 +13,6 @@ spring:
       password: ${DB_PASSWORD:1234}
   kafka:
     bootstrap-servers: ${KAFKA_HOST:localhost:9092}
-#    producer:
-
-      #value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 management:
   endpoints:
     web:

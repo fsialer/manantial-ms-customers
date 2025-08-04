@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kubernetes.io/change-cause: "Image feralexis007/manantial-customers-service:prod-d8fee31"
+  name: backend-customer-deployment-staging
+  labels:
+    app: back-customer-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: back-customer-staging
+  template:
+    metadata:
+      labels:
+        app: back-customer-staging
+    spec:
+      containers:
+        - name: customers-service
+          image: feralexis007/manantial-customers-service:prod-d8fee31
+          ports:
+            - containerPort: 8081
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: back-customer-staging
+                  key: db_host
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secrets-staging
+                  key: mongo_user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secrets-staging
+                  key: mongo_password
+            - name: KAFKA_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: back-customer-staging
+                  key: kafka_host
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-customer-service-staging
+spec:
+  type: ClusterIP
+  selector:
+    app: back-customer-staging
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081

@@ -1,0 +1,39 @@
+replicaCount: 3
+
+auth:
+  enabled: true
+  clientProtocol: sasl
+  interBrokerProtocol: sasl
+  sasl:
+    mechanism: scram-sha-512
+    users:
+      - user1
+    passwords:
+      - ${KAFKA_USER1_PASSWORD}
+
+externalAccess:
+  enabled: true
+  service:
+    type: LoadBalancer
+  autoDiscovery:
+    enabled: false
+
+persistence:
+  enabled: true
+  size: 20Gi
+  storageClass: "fast-ssd"
+
+zookeeper:
+  enabled: true
+  replicaCount: 3
+  persistence:
+    enabled: true
+    size: 10Gi
+
+resources:
+  requests:
+    cpu: "1000m"
+    memory: "2Gi"
+  limits:
+    cpu: "2000m"
+    memory: "4Gi"

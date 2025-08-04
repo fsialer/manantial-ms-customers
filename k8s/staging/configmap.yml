@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: back-gateway-staging
+data:
+  auth_server: http://manantial.staging.test/realms/manantial-realm
+  customers_url: http://backend-customer-service-staging:8081/v1/customers
+  customer_baseurl: http://backend-customer-service-staging:8081
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: back-customer-staging
+data:
+  db_name: customers_db
+  db_host:  mongodb://admin:admin@mongo6-service-staging:27017/customers_db?authSource=admin
+  kafka_host: kafka-staging:9092
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: back-consumer-staging
+data:
+  kafka_host: kafka-staging:9092
+  redis_host: redis7-service-staging
+  redis_port: "6379"
+  storage_type: local
+  storage_path: /pdfs

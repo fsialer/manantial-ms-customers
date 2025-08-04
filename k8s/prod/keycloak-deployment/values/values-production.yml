@@ -1,0 +1,43 @@
+auth:
+  adminUser: admin
+  adminPassword: ${KEYCLOAK_ADMIN_PASSWORD}
+
+replicaCount: 3
+
+ingress:
+  enabled: true
+  hostname: keycloak.mycompany.com
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  tls: true
+  extraTls:
+    - hosts:
+        - keycloak.mycompany.com
+      secretName: keycloak-tls
+
+service:
+  type: ClusterIP
+
+persistence:
+  enabled: true
+  storageClass: "fast-ssd"
+  size: 10Gi
+
+postgresql:
+  enabled: false
+
+externalDatabase:
+  host: "prod-postgres.mycompany.internal"
+  user: "keycloak"
+  password: "${KEYCLOAK_DB_PASSWORD}"
+  database: "keycloak"
+  port: 5432
+
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "1000m"
+  limits:
+    memory: "4Gi"
+    cpu: "2000m"

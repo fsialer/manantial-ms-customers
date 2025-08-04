@@ -1,0 +1,41 @@
+replicaCount: 1
+
+auth:
+  enabled: false
+
+externalAccess:
+  enabled: false
+
+persistence:
+  enabled: false
+
+zookeeper:
+  enabled: true
+  replicaCount: 1
+  persistence:
+    enabled: false
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "512Mi"
+  limits:
+    cpu: "500m"
+    memory: "1Gi"
+
+service:
+  type: ClusterIP
+  ports:
+    client: 9092
+
+listeners:
+  client:
+    protocol: PLAINTEXT
+
+advertisedListeners:
+  client:
+    protocol: PLAINTEXT
+    name: CLIENT
+    listenerName: CLIENT
+    advertisedHost: kafka-dev
+    advertisedPort: 9092

@@ -1,0 +1,48 @@
+auth:
+  adminUser: admin
+  adminPassword: admin123
+
+replicaCount: 1
+
+
+ingress:
+  enabled: false
+#  hostname: manantial.dev
+#  annotations:
+#    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+#  tls: true
+#  extraTls:
+#    - hosts:
+#        - manantial.dev
+#      secretName: keycloak-dev-tls
+
+service:
+  type: ClusterIP
+
+persistence:
+  enabled: true
+  storageClass: "standard"
+  size: 2Gi
+
+postgresql:
+  enabled: true
+  auth:
+    username: keycloak
+    password: keycloak123
+    database: keycloak
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+
+
+extraEnvVars:
+  - name: KC_HOSTNAME
+    value: http://manantial.dev.test
+  - name: KEYCLOAK_FRONTEND_URL
+    value: "http://manantial.dev.test"
+proxyAddressForwarding: true

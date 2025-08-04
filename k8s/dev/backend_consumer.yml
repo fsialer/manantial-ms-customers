@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kubernetes.io/change-cause: "Image feralexis007/manantial-ms-consumer:dev-3d97c0c"
+  name: backend-consumer-deployment-dev
+  labels:
+    app: back-consumer-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: back-consumer-dev
+  template:
+    metadata:
+      labels:
+        app: back-consumer-dev
+    spec:
+      containers:
+        - name: consumer-service
+          image: feralexis007/manantial-ms-consumer:dev-3d97c0c
+          ports:
+            - containerPort: 8099
+          env:
+            - name: KAFKA_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: back-consumer-dev
+                  key: kafka_host
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: back-consumer-dev
+                  key: redis_host
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: back-consumer-dev
+                  key: redis_port
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secrets-dev
+                  key: redis_password
+            - name: STORAGE_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: back-consumer-dev
+                  key: storage_type
+            - name: STORAGE_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: back-consumer-dev
+                  key: storage_path
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-consumer-service-dev
+spec:
+  type: ClusterIP
+  selector:
+    app: back-consumer-dev
+  ports:
+    - protocol: TCP
+      port: 8099
+      targetPort: 8099

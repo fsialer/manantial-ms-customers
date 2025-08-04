@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: back-gateway-local
+data:
+  auth_server: http://keycloak-dev.dev.svc.cluster.local/realms/manantial-realm
+  customers_url: http://backend-customer-service-local:8081/v1/customers
+  customer_baseurl: http://backend-customer-service-local:8081
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: back-customer-local
+data:
+  db_name: customers_db
+  db_host:  mongodb://admin:admin@mongo6-service-local:27017/customers_db?authSource=admin
+  kafka_host: kafka-dev:9092
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: back-consumer-local
+data:
+  kafka_host: kafka-local:9092
+  redis_host: redis7-service-local
+  redis_port: "6379"
+  storage_type: local
+  storage_path: /pdfs

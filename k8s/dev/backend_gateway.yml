@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kubernetes.io/change-cause: "Image feralexis007/manantial-gateway:dev-35df0c4"
+  name: backend-gateway-deployment-dev
+  labels:
+    app: back-gateway-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: back-gateway-dev
+  template:
+    metadata:
+      labels:
+        app: back-gateway-dev
+    spec:
+      hostAliases:
+        - ip: 10.96.87.3
+          hostnames:
+            - "manantial.test"
+      containers:
+        - name: gateway-service
+          image: feralexis007/manantial-gateway:dev-35df0c4
+          ports:
+            - containerPort: 8090
+          env:
+            - name: AUTH_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  name: back-gateway-dev
+                  key: auth_server
+            - name: CUSTOMER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: back-gateway-dev
+                  key: customers_url
+            - name: CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-secrets-dev
+                  key: keycloak_client_id
+            - name: CUSTOMER_BASEURL
+              valueFrom:
+                configMapKeyRef:
+                  name: back-gateway-dev
+                  key: customer_baseurl
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-gateway-service-dev
+spec:
+  type: ClusterIP
+  selector:
+    app: back-gateway-dev
+  ports:
+    - protocol: TCP
+      port: 8090
+      targetPort: 8090

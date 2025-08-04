@@ -1,0 +1,42 @@
+auth:
+  adminUser: admin
+  adminPassword: ${KEYCLOAK_ADMIN_PASSWORD}
+
+replicaCount: 2
+
+ingress:
+  enabled: true
+  hostname: keycloak.staging.mycompany.com
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+  tls: true
+  extraTls:
+    - hosts:
+        - keycloak.staging.mycompany.com
+      secretName: keycloak-staging-tls
+
+service:
+  type: ClusterIP
+
+persistence:
+  enabled: true
+  storageClass: "standard"
+  size: 5Gi
+
+postgresql:
+  enabled: false
+
+externalDatabase:
+  host: "staging-postgres.mycompany.internal"
+  user: "keycloak"
+  password: "${KEYCLOAK_DB_PASSWORD}"
+  database: "keycloak"
+  port: 5432
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+  limits:
+    memory: "2Gi"
+    cpu: "1000m"
