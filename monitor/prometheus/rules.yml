@@ -2,22 +2,24 @@ groups:
   - name: CPU
     rules:
       - alert: state_cpu_medium
-        expr: ((system_cpu_usage/100)*system_cpu_count)>=0.4 and ((system_cpu_usage/100)*system_cpu_count)<0.8
+        expr: (process_cpu_usage * 100) >= 40 and (process_cpu_usage * 100) < 80
         for: 5s
         labels:
-          severity: Warning
+          severity: warning
         annotations:
           summary: "Uso de la CPU en el nodo {{$labels.instance}} es moderado"
           description: "El uso de la CPU en el nodo {{$labels.instance}} es moderado ({{$value}})."
+
       - alert: state_cpu_high
-        expr: ((system_cpu_usage/100)*system_cpu_count)>=0.8 and ((system_cpu_usage/100)*system_cpu_count)<=1
+        expr: (process_cpu_usage * 100) >= 80 and (process_cpu_usage * 100) <= 100
         for: 5s
         labels:
-          severity: Critical
+          severity: critical
         annotations:
           summary: "Uso de la CPU en el nodo {{$labels.instance}} es excesivo"
-          description: "El uso de la CPU en el nodo {{$labels.instance}} es excesivo ({{$value}}) ."
-  - name: SERVICES
+          description: "El uso de la CPU en el nodo {{$labels.instance}} es excesivo ({{$value}})."
+
+  - name: state_services
     rules:
       - alert: state_services_down
         expr: up == 0
@@ -25,5 +27,25 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "El nodo {{$labels.instance}} esta abajo."
-          description: "El nodo {{$labels.instance}} no esta respondiendo a las peticiones de Prometheus."
+          summary: "El servicio {{$labels.instance}} está abajo"
+          description: "El servicio {{$labels.instance}} no está respondiendo a las peticiones de Prometheus."
+
+  - name: state_memory
+    rules:
+      - alert: state_memory_heap_medium
+        expr: 100 * (jvm_memory_used_bytes{area="heap"} / ignoring(instance) jvm_memory_max_bytes{area="heap"})>50 and 100 * (jvm_memory_used_bytes{area="heap"} / ignoring(instance) jvm_memory_max_bytes{area="heap"})<80
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Uso de la memoria heap ({{$labels.id}}) de {{$labels.job}} es moderado"
+          description: "La memoria heap ({{$labels.id}}) de {{$labels.job}} tiene un uso moderado ({{$value}}%)."
+
+      - alert: state_memory_heap_high
+        expr: 100 * (jvm_memory_used_bytes{area="heap"} / ignoring(instance) jvm_memory_max_bytes{area="heap"})>80
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Uso de la memoria heap ({{$labels.id}}) de {{$labels.job}} es excesivo"
+          description: "La memoria heap ({{$labels.id}}) de {{$labels.job}} está a punto de llenarse. Revisa la causa del problema."

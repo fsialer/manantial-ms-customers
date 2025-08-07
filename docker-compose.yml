@@ -74,6 +74,12 @@ services:
     command: ["start-dev","--health-enabled=true", "--metrics-enabled=true"]
     ports:
       - "8080:8080"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health/ready" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     networks:
       - customers-net
     restart: unless-stopped
@@ -97,7 +103,7 @@ services:
     volumes:
       - ./monitor/log/customer-service:/app/logs
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
       interval: 90s
       timeout: 30s
       retries: 5
@@ -106,20 +112,25 @@ services:
       - customers-net
 
   consumer-service:
-    image: manantial-ms-consumer:latest
+    image: feralexis007/manantial-ms-consumer:dev-722fb6a
     container_name: consumer-service
     ports:
       - "8099:8099"
     environment:
-      DB_HOST: ${MONGO_CONSUMER_HOST}
-      DB_USERNAME: ${MONGO_USER}
-      DB_PASSWORD: ${MONGO_PASSWORD}
       KAFKA_HOST: ${KAFKA_HOST}
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+      STORAGE_TYPE: ${STORAGE_TYPE}
+      STORAGE_PATH: ${STORAGE_PATH}
     volumes:
       - ./monitor/log/consumer-service:/app/logs
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8099/actuator/health" ]
+      interval: 90s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
     depends_on:
       redis:
         condition: service_healthy
@@ -142,93 +153,15 @@ services:
     networks:
       - customers-net
     depends_on:
+#      keycloak-server:
+#        condition: service_healthy
+#      customer-service:
+#        condition: service_healthy
+#      consumer-service:
+#        condition: service_healthy
       - keycloak-server
       - customer-service
-    restart: unless-stopped
-
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitor/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./monitor/prometheus/rules.yml:/etc/prometheus/rules.yml
-    networks:
-      - customers-net
-    depends_on:
-      - alertmanager
-    restart: unless-stopped
-
-  node-exporter:
-    image: prom/node-exporter
-    container_name: node-exporter
-    ports:
-      - "9100:9100"
-    networks:
-      - customers-net
-    restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana-vol:/var/lib/grafana
-      - ./monitor/grafana/provisioning:/etc/grafana/provisioning
-      - ./monitor/grafana/dashboards:/etc/grafana/dashboards
-    networks:
-      - customers-net
-    depends_on:
-      - prometheus
-    restart: unless-stopped
-
-  loki:
-    image: grafana/loki:2.9.0
-    ports:
-      - "3100:3100"
-    command: -config.file=/etc/loki/config.yml
-    volumes:
-      - ./monitor/loki/config.yml:/etc/loki/config.yml:ro
-      - grafana-vol:/tmp/loki
-    networks:
-      - customers-net
-
-  promtail:
-    image: grafana/promtail:2.9.0
-    volumes:
-      - ./monitor/promtail/config.yml:/etc/promtail/config.yml:ro
-      - ./monitor/log:/var/log           # O los logs de tus contenedores
-    command: -config.file=/etc/promtail/config.yml
-    networks:
-      - customers-net
-
-  alertmanager:
-    container_name: alertmanager
-    image: prom/alertmanager:v0.27.0
-    restart: unless-stopped
-    volumes:
-      - ./monitor/alerts/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    ports:
-      - "9093:9093"
-    networks:
-      - customers-net
-
-  alertmanager-discord-relay:
-    container_name: alertmanager-discord-relay
-    image: benjojo/alertmanager-discord:latest
-    environment:
-      DISCORD_WEBHOOK: ${DISCORD_WEBHOOK}
-      DISCORD_USERNAME: ${DISCORD_USERNAME}
-      DEBUG: true
-    networks:
-      - customers-net
-    depends_on:
-      - alertmanager
+      - consumer-service
     restart: unless-stopped
 
 networks:
@@ -236,8 +169,6 @@ networks:
     driver: bridge
 
 volumes:
-  grafana-vol:
   mongo_vol:
   keycloak_data:
   redis_data:
-  loki_data:

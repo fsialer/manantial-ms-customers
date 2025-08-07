@@ -23,6 +23,7 @@ scrape_configs:
         replacement: 'keycloak-server'
       - target_label: type
         replacement: 'backend'
+
   - job_name: 'customer-service'
     metrics_path: '/actuator/prometheus'
     static_configs:
@@ -58,5 +59,17 @@ scrape_configs:
         replacement: 'node-exporter:9100'
       - target_label: job
         replacement: 'node'
+      - target_label: type
+        replacement: 'monitoring'
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: [ 'prometheus:9090' ]
+    relabel_configs:
+      - source_labels: [ __address__ ]
+        target_label: instance
+        replacement: 'prometheus:9090'
+      - target_label: job
+        replacement: 'prometheus'
       - target_label: type
         replacement: 'monitoring'

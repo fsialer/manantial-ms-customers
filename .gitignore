@@ -1,5 +1,7 @@
 .env
 **/*.log
+**/*.tmp
+**/*.gz
 **/loki-data/**
 HELP.md
 .gradle

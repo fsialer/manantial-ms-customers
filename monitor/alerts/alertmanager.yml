@@ -1,5 +1,7 @@
 route:
   group_wait: 5s
+  group_interval: 30m          # Tiempo mínimo entre envíos de grupos de alertas
+  repeat_interval: 30m         # ⬅️ Reenvía la alerta cada 30 minutos si sigue activa
   receiver: discord
 
 receivers:

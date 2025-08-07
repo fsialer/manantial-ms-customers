@@ -1,0 +1,118 @@
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitor/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitor/prometheus/rules.yml:/etc/prometheus/rules.yml
+    networks:
+      - customers-net
+      - monitoring-net
+    depends_on:
+      - alertmanager
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    networks:
+      - customers-net
+      - monitoring-net
+    restart: unless-stopped
+#    command:
+#      - '--path.procfs=/host/proc'
+#      - '--path.rootfs=/rootfs'
+#      - '--path.sysfs=/host/sys'
+#      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+#      - '--log.level=warn'
+#      - '--no-collector.nfsd'
+#      - '--no-collector.nfs'
+#      - '--no-collector.hwmon'
+#      - '--no-collector.wifi'
+#      - '--no-collector.nvme'
+#      - '--no-collector.rapl'
+#      - '--no-collector.thermal_zone'
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-vol:/var/lib/grafana
+      - ./monitor/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitor/grafana/dashboards:/etc/grafana/dashboards:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000/api/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - customers-net
+      - monitoring-net
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:2.9.0
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/config.yml
+    volumes:
+      - ./monitor/loki/config.yml:/etc/loki/config.yml:ro
+      - grafana-vol:/tmp/loki
+    networks:
+      - customers-net
+      - monitoring-net
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    volumes:
+      - ./monitor/promtail/config.yml:/etc/promtail/config.yml:ro
+      - ./monitor/log:/var/log           # O los logs de tus contenedores
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - customers-net
+      - monitoring-net
+
+  alertmanager:
+    container_name: alertmanager
+    image: prom/alertmanager:v0.27.0
+    restart: unless-stopped
+    volumes:
+      - ./monitor/alerts/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    ports:
+      - "9093:9093"
+    networks:
+      - monitoring-net
+      - customers-net
+
+  alertmanager-discord-relay:
+    container_name: alertmanager-discord-relay
+    image: benjojo/alertmanager-discord:latest
+    environment:
+      DISCORD_WEBHOOK: ${DISCORD_WEBHOOK}
+      DISCORD_USERNAME: ${DISCORD_USERNAME}
+      DEBUG: true
+    networks:
+      - monitoring-net
+      - customers-net
+    depends_on:
+      - alertmanager
+    restart: unless-stopped
+networks:
+  customers-net:
+    driver: bridge
+  monitoring-net:
+    driver: bridge
+volumes:
+  grafana-vol:
+  loki_data:
