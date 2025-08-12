@@ -122,7 +122,11 @@ services:
       REDIS_PORT: ${REDIS_PORT}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       STORAGE_TYPE: ${STORAGE_TYPE}
-      STORAGE_PATH: ${STORAGE_PATH}
+      PATH_CUSTOMERS: ${PATH_CUSTOMERS}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
     volumes:
       - ./monitor/log/consumer-service:/app/logs
     healthcheck:
