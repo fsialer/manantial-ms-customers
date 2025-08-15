@@ -119,7 +119,7 @@ jobs:
             echo "IMAGE_TAG=prod-${COMMIT_HASH}" >> $GITHUB_OUTPUT
           else
             echo "IMAGE_TAG=dev-${COMMIT_HASH}" >> $GITHUB_ENV
-            echo "IMAGE_TAG=prod-${COMMIT_HASH}" >> $GITHUB_OUTPUT
+            echo "IMAGE_TAG=dev-${COMMIT_HASH}" >> $GITHUB_OUTPUT
           fi
 
       - name: Log in to Docker Hub
