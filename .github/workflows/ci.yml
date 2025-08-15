@@ -1,0 +1,177 @@
+name: CI
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - main
+jobs:
+#  scan-snyk:
+#    name: Snyk security scan
+#    if: github.ref == 'refs/heads/develop'
+#    runs-on: [ ubuntu-latest ]
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      - name: Setup java
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: 21
+#          distribution: 'corretto'
+#
+#      - name: Cache Gradle dependencies
+#        uses: actions/cache@v3
+#        with:
+#          path: ~/.gradle/caches
+#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#          restore-keys: |
+#            ${{ runner.os }}-gradle-
+#
+#      - name: Grant execute permission to Gradle
+#        run: chmod +x gradlew
+#
+#      - name: Run Snyk to check for vulnerabilities
+#        uses: snyk/actions/gradle@master
+#        env:
+#          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#        with:
+#          args: test --all-sub-projects
+
+  unit-test:
+    name: Execute unit test
+    runs-on: [ubuntu-latest]
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'corretto'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission to Gradle
+        run: chmod +x gradlew
+
+      - name: Run Test
+        run: ./gradlew clean test jacocoTestReport
+
+      - name: Generate report coverage Jacoco
+        run: ./gradlew clean jacocoTestReport
+
+      - name: Upload coverage jacoco artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-jacoco-report
+          path: build/reports/jacoco/test/html
+
+  docker-push:
+    name: Build and push image docker
+    runs-on: [ubuntu-latest]
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+    #needs: ${{ github.ref == 'refs/heads/develop' && fromJson('["scan-snyk", "unit-test"]') || null }}
+    needs: ${{ github.ref == 'refs/heads/develop' && fromJson('["unit-test"]') || null }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'corretto'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Grant execute permission to Gradle
+        run: chmod +x gradlew
+
+      - name: Build Spring Boot application
+        run: ./gradlew clean build
+
+      - name: Get short commit hash
+        id: vars
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Define Docker image tag
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "IMAGE_TAG=prod-${COMMIT_HASH}" >> $GITHUB_ENV
+          else
+            echo "IMAGE_TAG=dev-${COMMIT_HASH}" >> $GITHUB_ENV
+          fi
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:${{ env.IMAGE_TAG }} .
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:${{ env.IMAGE_TAG }} \
+          ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:latest
+      
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            docker push ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:${{ env.IMAGE_TAG }}
+            docker push ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:latest
+          else
+            docker push ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:${{ env.IMAGE_TAG }}
+          fi
+
+  notify-discord:
+    name: Notify Discord
+    runs-on: ubuntu-latest
+    needs: [docker-push]
+    if: always()
+    steps:
+      - name: Send notification to Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          JOB_STATUS: ${{ needs.docker-push.result }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          COMMIT_AUTHOR: ${{ github.actor }}
+        run: |
+          if [ "$JOB_STATUS" == "success" ]; then
+            STATUS_MSG="✅ Éxito"
+            COLOR=3066993  # Verde
+          else
+            STATUS_MSG="❌ Fallo"
+            COLOR=15158332 # Rojo
+          fi
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d '{
+                    "embeds": [{
+                      "title": "'"$WORKFLOW_NAME"'",
+                      "description": "'"$STATUS_MSG"' en la rama **'"$BRANCH_NAME"'** por **'"$COMMIT_AUTHOR"'**.",
+                      "color": '"$COLOR"',
+                      "timestamp": "'"$(date --iso-8601=seconds)"'"
+                    }]
+                  }' \
+               $DISCORD_WEBHOOK
+          
+
+
+
+
+
