@@ -27,6 +27,12 @@ WORKDIR /app
 # Copia el JAR generado desde la etapa anterior
 COPY --from=builder /app/build/libs/*.jar app.jar
 
+# ✅ Agregar usuario no-root con UID ≥ 10000
+RUN adduser -D -u 10001 appuser
+
+# ✅ Cambiar al usuario
+USER appuser
+
 EXPOSE 8081
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
