@@ -82,6 +82,8 @@ jobs:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     #needs: ${{ github.ref == 'refs/heads/develop' && fromJson('["scan-snyk", "unit-test"]') || null }}
     needs: [unit-test]
+    outputs:
+      IMAGE_TAG: ${{ steps.set-tag.outputs.IMAGE_TAG }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -110,6 +112,7 @@ jobs:
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Define Docker image tag
+        id: set-tag
         run: |
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "IMAGE_TAG=prod-${COMMIT_HASH}" >> $GITHUB_ENV
@@ -146,7 +149,6 @@ jobs:
         run: |
             echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> $GITHUB_ENV
             echo "NAME_IMAGE=${{ vars.NAME_IMAGE }}" >> $GITHUB_ENV
-            echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Send notification to Discord
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -156,15 +158,15 @@ jobs:
           COMMIT_AUTHOR: ${{ github.actor }}
           DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
           NAME_IMAGE: ${{ env.NAME_IMAGE }}
-          IMAGE_TAG: ${{ env.IMAGE_TAG}}
+          IMAGE_TAG: ${{needs.docker-push.outputs.IMAGE_TAG}}
         run: |
           if [ "$JOB_STATUS" == "success" ]; then
             STATUS_MSG="✅ Éxito"
             if [ "$BRANCH_NAME" == "main" ]; then
-               DOCKER_SUMMARY="🐋 Docker image: ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:prod-${{ env.IMAGE_TAG }}\n
+               DOCKER_SUMMARY="🐋 Docker image: ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:${{ env.IMAGE_TAG }}\n
                 ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:latest"
             else
-               DOCKER_SUMMARY="🐋 Docker image: ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:dev-${{ env.IMAGE_TAG }}"
+               DOCKER_SUMMARY="🐋 Docker image: ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:${{ env.IMAGE_TAG }}"
             fi
             COLOR=3066993  # Verde
           else
@@ -178,8 +180,7 @@ jobs:
                -d '{
                     "embeds": [{
                       "title": "'"$WORKFLOW_NAME"'",
-                      "description": "'"$STATUS_MSG"' en la rama **'"$BRANCH_NAME"'** por **'"$COMMIT_AUTHOR"'**.\n
-                       $DOCKER_SUMMARY",
+                      "description": "'"$STATUS_MSG"' en la rama **'"$BRANCH_NAME"'** por **'"$COMMIT_AUTHOR"'**.\n'"$DOCKER_SUMMARY"'",
                       "color": '"$COLOR"',
                       "timestamp": "'"$(date --iso-8601=seconds)"'"
                     }]
