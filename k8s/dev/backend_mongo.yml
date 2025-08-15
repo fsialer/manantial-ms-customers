@@ -45,6 +45,16 @@ spec:
       containers:
         - image: mongo:6.0
           name: mongo6
+          imagePullPolicy: Always
+          securityContext:
+            runAsUser: 10001
+            runAsGroup: 10001
+            fsGroup: 10001
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: 27017
           env:
@@ -61,10 +71,42 @@ spec:
           volumeMounts:
             - name: mongo-dev
               mountPath: /data/db
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              memory: "250Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+              initialDelaySeconds: 30
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
       volumes:
         - name: mongo-dev
           persistentVolumeClaim:
             claimName: mongo-pvc-dev
+        - name: tmp
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

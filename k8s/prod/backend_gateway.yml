@@ -16,13 +16,18 @@ spec:
       labels:
         app: back-gateway-prod
     spec:
-      hostAliases:
-        - ip: 10.96.87.3
-          hostnames:
-            - "manantial.test"
       containers:
         - name: gateway-service
           image: feralexis007/manantial-gateway:prod-35df0c4
+          imagePullPolicy: Always
+          securityContext:
+            runAsUser: 10003
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: 8090
           env:
@@ -46,6 +51,30 @@ spec:
                 configMapKeyRef:
                   name: back-gateway-prod
                   key: customer_baseurl
+          resources:
+            requests:
+              memory: "500Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health   # <-- Asegúrate de que este endpoint existe en tu app
+              port: 8090
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8090
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service

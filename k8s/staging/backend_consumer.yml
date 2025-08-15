@@ -19,6 +19,15 @@ spec:
       containers:
         - name: consumer-service
           image: feralexis007/manantial-ms-consumer:prod-3d97c0c
+          imagePullPolicy: Always
+          securityContext:
+            runAsUser: 10002
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: 8099
           env:
@@ -52,6 +61,30 @@ spec:
                 configMapKeyRef:
                   name: back-consumer-staging
                   key: storage_path
+          resources:
+            requests:
+              memory: "500Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health   # <-- Asegúrate de que este endpoint existe en tu app
+              port: 8099
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8099
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service
