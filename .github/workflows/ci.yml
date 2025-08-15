@@ -163,10 +163,9 @@ jobs:
           if [ "$JOB_STATUS" == "success" ]; then
             STATUS_MSG="✅ Éxito"
             if [ "$BRANCH_NAME" == "main" ]; then
-               DOCKER_SUMMARY="🐋 Docker image: ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:${{ env.IMAGE_TAG }}\n
-                ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:latest"
+                DOCKER_SUMMARY="🐋 Docker image: $DOCKER_USERNAME/$NAME_IMAGE:$IMAGE_TAG\n$DOCKER_USERNAME/$NAME_IMAGE:latest"
             else
-               DOCKER_SUMMARY="🐋 Docker image: ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:${{ env.IMAGE_TAG }}"
+                DOCKER_SUMMARY="🐋 Docker image: $DOCKER_USERNAME/$NAME_IMAGE:$IMAGE_TAG"
             fi
             COLOR=3066993  # Verde
           else
