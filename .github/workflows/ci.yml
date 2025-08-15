@@ -81,7 +81,7 @@ jobs:
     runs-on: [ubuntu-latest]
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     #needs: ${{ github.ref == 'refs/heads/develop' && fromJson('["scan-snyk", "unit-test"]') || null }}
-    needs: ${{ github.ref == 'refs/heads/develop' && fromJson('["unit-test"]') || null }}
+    needs: [unit-test]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
