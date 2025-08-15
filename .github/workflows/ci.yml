@@ -65,10 +65,10 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run Test
-        run: ./gradlew clean test jacocoTestReport
+        run: ./gradlew clean build -x test
 
       - name: Generate report coverage Jacoco
-        run: ./gradlew clean jacocoTestReport
+        run: ./gradlew clean test jacocoTestReport
 
       - name: Upload coverage jacoco artifact
         uses: actions/upload-artifact@v4
@@ -142,6 +142,11 @@ jobs:
     needs: [docker-push]
     if: always()
     steps:
+      - name: Set up environment variables
+        run: |
+            echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> $GITHUB_ENV
+            echo "NAME_IMAGE=${{ vars.NAME_IMAGE }}" >> $GITHUB_ENV
+            echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Send notification to Discord
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -149,13 +154,23 @@ jobs:
           JOB_STATUS: ${{ needs.docker-push.result }}
           BRANCH_NAME: ${{ github.ref_name }}
           COMMIT_AUTHOR: ${{ github.actor }}
+          DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
+          NAME_IMAGE: ${{ env.NAME_IMAGE }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG}}
         run: |
           if [ "$JOB_STATUS" == "success" ]; then
             STATUS_MSG="✅ Éxito"
+            if [ "$BRANCH_NAME" == "main" ]; then
+               DOCKER_SUMMARY="🐋 Docker image: ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:prod-${{ env.IMAGE_TAG }}\n
+                ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:latest"
+            else
+               DOCKER_SUMMARY="🐋 Docker image: ${{ secrets.DOCKER_USERNAME }}/${{ vars.NAME_IMAGE }}:dev-${{ env.IMAGE_TAG }}"
+            fi
             COLOR=3066993  # Verde
           else
             STATUS_MSG="❌ Fallo"
             COLOR=15158332 # Rojo
+            DOCKER_SUMMARY="❌ Image can't generate."
           fi
 
           curl -H "Content-Type: application/json" \
@@ -163,15 +178,10 @@ jobs:
                -d '{
                     "embeds": [{
                       "title": "'"$WORKFLOW_NAME"'",
-                      "description": "'"$STATUS_MSG"' en la rama **'"$BRANCH_NAME"'** por **'"$COMMIT_AUTHOR"'**.",
+                      "description": "'"$STATUS_MSG"' en la rama **'"$BRANCH_NAME"'** por **'"$COMMIT_AUTHOR"'**.\n
+                       $DOCKER_SUMMARY",
                       "color": '"$COLOR"',
                       "timestamp": "'"$(date --iso-8601=seconds)"'"
                     }]
                   }' \
                $DISCORD_WEBHOOK
-          
-
-
-
-
-
