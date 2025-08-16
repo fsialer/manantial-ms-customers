@@ -27,6 +27,7 @@ public class CustomerPersistenceMapperImpl implements CustomerPersistenceMapper 
     @Override
     public CustomerDocument customerToCustomerDocument(Customer customer) {
         return CustomerDocument.builder()
+                .id(customer.getId())
                 .name(customer.getName())
                 .lastName(customer.getLastName())
                 .age(customer.getAge())

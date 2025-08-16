@@ -155,7 +155,6 @@ class GlobalControllerAdviceTest {
     void Expect_CustomerNotFoundException_When_CustomerIdDoNotExists(){
         CustomerRequest customerRequest= TestUtilCustomer.buildMockCustomerRequest();
         Customer customer = TestUtilCustomer.buildMockCustomer();
-        CustomerResponse customerResponse= TestUtilCustomer.buildMockCustomerResponse();
         when(updateCustomerUseCase.update(anyString(),any(Customer.class))).thenThrow(new CustomerNotFoundException("Customer not found: ".concat(customer.getId())));
         when(customerRestMapper.customerRequestToCustomer(any())).thenReturn(customer);
 
