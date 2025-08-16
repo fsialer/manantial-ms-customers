@@ -42,6 +42,22 @@ spec:
       labels:
         app: mongo-local
     spec:
+      securityContext:
+        fsGroup: 10001
+      initContainers:
+        - name: fix-permissions
+          image: busybox
+          command: [ "sh", "-c", "chown -R 10001:10001 /data/db" ]
+          volumeMounts:
+            - name: mongo-local
+              mountPath: /data/db
+          resources:
+            requests:
+              memory: "250Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
       containers:
         - image: mongo:6.0
           name: mongo6
@@ -49,7 +65,6 @@ spec:
           securityContext:
             runAsUser: 10001
             runAsGroup: 10001
-            fsGroup: 10001
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             capabilities:
@@ -86,10 +101,10 @@ spec:
                 - mongosh
                 - --eval
                 - "db.adminCommand('ping')"
-              initialDelaySeconds: 30
-              periodSeconds: 10
-              timeoutSeconds: 5
-              failureThreshold: 6
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
           readinessProbe:
             exec:
               command:

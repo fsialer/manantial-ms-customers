@@ -2,12 +2,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kubernetes.io/change-cause: "Image feralexis007/manantial-customers-service:dev-d8fee31"
+    kubernetes.io/change-cause: "Image feralexis007/manantial-customers-service:dev-1704a98"
   name: backend-customer-deployment-local
   labels:
     app: back-customer-local
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: back-customer-local
@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: customers-service
-          image: feralexis007/manantial-customers-service:dev-d8fee31
+          image: feralexis007/manantial-customers-service:dev-1704a98
           imagePullPolicy: Always
           securityContext:
             runAsUser: 10001

@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: back-gateway-local
 data:
-  auth_server: http://keycloak-dev.dev.svc.cluster.local/realms/manantial-realm
+  auth_server: http://keycloak-local.local.svc.cluster.local/realms/manantial-realm
   customers_url: http://backend-customer-service-local:8081/v1/customers
   customer_baseurl: http://backend-customer-service-local:8081
 

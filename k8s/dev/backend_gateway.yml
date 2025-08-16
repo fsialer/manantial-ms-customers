@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kubernetes.io/change-cause: "Image feralexis007/manantial-gateway:dev-35df0c4"
+    kubernetes.io/change-cause: "Image feralexis007/manantial-gateway:dev-ce32579"
   name: backend-gateway-deployment-dev
   labels:
     app: back-gateway-dev
@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: gateway-service
-          image: feralexis007/manantial-gateway:dev-35df0c4
+          image: feralexis007/manantial-gateway:dev-ce32579
           imagePullPolicy: Always
           securityContext:
             runAsUser: 10003
