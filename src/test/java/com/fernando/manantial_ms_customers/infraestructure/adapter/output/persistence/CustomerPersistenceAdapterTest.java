@@ -19,6 +19,7 @@ import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -88,6 +89,29 @@ class CustomerPersistenceAdapterTest {
         Mockito.verify(customerRepository,times(1)).save(any(CustomerDocument.class));
         Mockito.verify(customerPersistenceMapper,times(1)).customerDocumentMonoToCustomerMono(any(Mono.class));
         Mockito.verify(customerPersistenceMapper,times(1)).customerToCustomerDocument(any(Customer.class));
+    }
+
+    @Test
+    @DisplayName("When Customer Id Exists Expect Information Customer")
+    void When_CustomerIdExists_Expect_InformationCustomer(){
+        CustomerDocument customerDocument = TestUtilCustomer.buildMockCustomerDocument();
+        Customer customer=TestUtilCustomer.buildMockCustomer();
+        when(customerRepository.findById(anyString())).thenReturn(Mono.just(customerDocument));
+        when(customerPersistenceMapper.customerDocumentMonoToCustomerMono(any())).thenReturn(Mono.just(customer));
+
+        Mono<Customer> customerInfo=customerPersistenceAdapter.getCustomer("1");
+
+        StepVerifier.create(customerInfo)
+                .expectNextMatches(customerMatch->
+                        customerMatch.getId().equals(customer.getId())
+                                && customerMatch.getName().equals(customer.getName())
+                                && customerMatch.getLastName().equals(customer.getLastName())
+                                && customerMatch.getAge().equals(customer.getAge())
+                                && customerMatch.getBirthDate().equals(customer.getBirthDate())
+                ).verifyComplete();
+        Mockito.verify(customerPersistenceMapper,times(1)).customerDocumentMonoToCustomerMono(any());
+        Mockito.verify(customerRepository,times(1)).findById(anyString());
+
     }
 
 

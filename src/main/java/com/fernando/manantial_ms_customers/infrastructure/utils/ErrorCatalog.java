@@ -9,7 +9,8 @@ public enum ErrorCatalog {
     CUSTOMER_INTERNAL_SERVER_ERROR("CUSTOMER_000", "Internal server error."),
     CUSTOMER_BAD_PARAMETER("CUSTOMER_001", "Invalid parameters for creation customer"),
     CUSTOMER_RULE("CUSTOMER_002","A rule is not valid"),
-    CUSTOMER_RULE_STRATEGY("CUSTOMER_003","A code rule is not valid");
+    CUSTOMER_RULE_STRATEGY("CUSTOMER_003","A code rule is not valid"),
+    CUSTOMER_NOT_FOUND("CUSTOMER_004","Customer not found.");
     private final String code;
     private final String message;
 }

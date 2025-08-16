@@ -3,9 +3,11 @@ package com.fernando.manantial_ms_customers.domain.services;
 import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersUseCase;
 import com.fernando.manantial_ms_customers.application.ports.input.GetMetricsUseCase;
 import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
+import com.fernando.manantial_ms_customers.application.ports.input.UpdateCustomerUseCase;
 import com.fernando.manantial_ms_customers.application.ports.output.CalculateMetricsPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerEventPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerPersistencePort;
+import com.fernando.manantial_ms_customers.domain.exceptions.CustomerNotFoundException;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
 import com.fernando.manantial_ms_customers.domain.models.Customer;
 import com.fernando.manantial_ms_customers.domain.models.Metric;
@@ -21,7 +23,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase, GetMetricsUseCase {
+public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase, GetMetricsUseCase, UpdateCustomerUseCase {
 
     private final CustomerPersistencePort customerPersistencePort;
     private final List<CustomerRule> listCustomerRule;
@@ -64,5 +66,30 @@ public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase
                     Double standardDeviation = calculateMetricsPort.calculateStandardDeviation(ages,average);
                     return Mono.just(Metric.builder().average(average).standardDeviation(standardDeviation).build());
                 });
+    }
+
+    @Override
+    public Mono<Customer> update(String id, Customer customer) {
+        List<String> listCodeRule=List.of("RULE001");
+        List<CustomerRule> rulesApplicable = listCustomerRule.stream()
+                .filter(rule -> listCodeRule.stream().anyMatch(rule::isApplicable))
+                .toList();
+
+        if(rulesApplicable.isEmpty()){
+            return Mono.error(new RuleStrategyException("Do not Exist any rule applicable"));
+        }
+        return Flux.fromIterable(rulesApplicable)
+                .concatMap(rule -> rule.validateRule(customer))
+                .then(customerPersistencePort.getCustomer(id)
+                        .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found: ".concat(id))))
+                        .flatMap(customer1->{
+                            customer1.setName(customer.getName());
+                            customer1.setLastName(customer.getLastName());
+                            customer1.setAge(customer.getAge());
+                            customer1.setBirthDate(customer.getBirthDate());
+                                    return customerPersistencePort.saveCustomer(customer1)
+                                            .doOnSuccess(customerEventPort::publishCustomerSaved);
+                                }
+                                )).doOnError(e->log.error("Error: {}",e.getMessage()));
     }
 }

@@ -4,6 +4,7 @@ import com.fernando.manantial_ms_customers.Utils.TestUtilCustomer;
 import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersUseCase;
 import com.fernando.manantial_ms_customers.application.ports.input.GetMetricsUseCase;
 import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
+import com.fernando.manantial_ms_customers.application.ports.input.UpdateCustomerUseCase;
 import com.fernando.manantial_ms_customers.domain.models.Customer;
 import com.fernando.manantial_ms_customers.domain.models.Metric;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.CustomerRestAdapter;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +43,9 @@ class CustomerRestAdapterTest {
 
     @MockitoBean
     private GetMetricsUseCase getMetricsUseCase;
+
+    @MockitoBean
+    private UpdateCustomerUseCase updateCustomerUseCase;
 
 
     @Test
@@ -119,5 +124,32 @@ class CustomerRestAdapterTest {
 
         Mockito.verify(getMetricsUseCase,times(1)).getMetrics();
         Mockito.verify(customerRestMapper,times(1)).metricToMetricResponse(any(Metric.class));
+    }
+
+    @Test
+    @DisplayName("When Have CustomerId Correct Expect Obtain Information Customer")
+    void When_HaveCustomerIdCorrect_Expect_ObtainInformationCustomer(){
+        CustomerRequest customerRequest=TestUtilCustomer.buildMockCustomerRequest();
+        Customer customer = TestUtilCustomer.buildMockCustomer();
+        CustomerResponse customerResponse = TestUtilCustomer.buildMockCustomerResponse();
+        when(updateCustomerUseCase.update(anyString(),any())).thenReturn(Mono.just(customer));
+        when(customerRestMapper.customerRequestToCustomer(any())).thenReturn(customer);
+        when(customerRestMapper.customerToCustomerResponse(any())).thenReturn(customerResponse);
+
+        webTestClient.put()
+                .uri("/v1/customers/{id}","1")
+                .bodyValue(customerRequest)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(customerResponse.id())
+                .jsonPath("$.name").isEqualTo(customerResponse.name())
+                .jsonPath("$.lastName").isEqualTo(customerResponse.lastName())
+                .jsonPath("$.age").isEqualTo(customerResponse.age())
+                .jsonPath("$.birthDate").isEqualTo(customerResponse.birthDate());
+
+        Mockito.verify(updateCustomerUseCase,times(1)).update(anyString(),any());
+        Mockito.verify(customerRestMapper,times(1)).customerRequestToCustomer(any());
+        Mockito.verify(customerRestMapper,times(1)).customerToCustomerResponse(any());
     }
 }

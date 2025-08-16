@@ -7,4 +7,5 @@ import reactor.core.publisher.Mono;
 public interface CustomerPersistencePort {
     Flux<Customer> getCustomers();
     Mono<Customer> saveCustomer(Customer customer);
+    Mono<Customer> getCustomer(String id);
 }

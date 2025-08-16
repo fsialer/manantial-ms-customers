@@ -4,6 +4,7 @@ import com.fernando.manantial_ms_customers.Utils.TestUtilCustomer;
 import com.fernando.manantial_ms_customers.application.ports.output.CalculateMetricsPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerEventPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerPersistencePort;
+import com.fernando.manantial_ms_customers.domain.exceptions.CustomerNotFoundException;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerRuleException;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
 import com.fernando.manantial_ms_customers.domain.models.Customer;
@@ -150,4 +151,88 @@ class CustomerServicesTest {
         Mockito.verify(calculateMetricsPort,times(1)).calculateAverage(anyList());
         Mockito.verify(calculateMetricsPort,times(1)).calculateStandardDeviation(anyList(),anyDouble());
     }
+
+    @Test
+    @DisplayName("When Information Customer Is Correct Expect Customer Updated")
+    void When_InformationCustomerIsCorrectExpectCustomerUpdated(){
+        Customer customer1 = TestUtilCustomer.buildMockCustomer();
+        Customer customerInfo = TestUtilCustomer.buildMockCustomer();
+        when(customerPersistencePort.saveCustomer(any(Customer.class))).thenReturn(Mono.just(customer1));
+        when(listCustomerRule.stream()).thenReturn(Stream.of(new CompareAgeWithAgeOfBirthDate()));
+        when(customerPersistencePort.getCustomer(anyString())).thenReturn(Mono.just(customerInfo));
+        doNothing().when(customerEventPort).publishCustomerSaved(any(Customer.class));
+        Mono<Customer> customerMono= customerService.update("1", customer1);
+
+        StepVerifier.create(customerMono)
+                .expectNextMatches(customer->
+                        customer.getId().equals(customer1.getId())
+                                && customer.getName().equals(customer1.getName())
+                                && customer.getLastName().equals(customer1.getLastName())
+                                && customer.getAge().equals(customer1.getAge())
+                                && customer.getBirthDate().equals(customer1.getBirthDate()))
+                .verifyComplete();
+
+        Mockito.verify(customerPersistencePort,times(1)).saveCustomer(any(Customer.class));
+        Mockito.verify(customerEventPort,times(1)).publishCustomerSaved(any(Customer.class));
+        Mockito.verify(customerPersistencePort,times(1)).getCustomer(anyString());
+        Mockito.verify(listCustomerRule,times(1)).stream();
+    }
+
+
+    @Test
+    @DisplayName("Expect CustomerRuleException When Rule Customer Is Not Valid2")
+    void Expect_CustomerRuleException_When_RuleCustomerIsNotValid2(){
+        Customer customer1 = TestUtilCustomer.buildMockCustomer();
+        Customer customerInfo = TestUtilCustomer.buildMockCustomer();
+        customer1.setAge(36);
+        when(listCustomerRule.stream()).thenReturn(Stream.of(new CompareAgeWithAgeOfBirthDate()));
+        when(customerPersistencePort.getCustomer(anyString())).thenReturn(Mono.just(customerInfo));
+        Mono<Customer> customerMono= customerService.update("1",customer1);
+
+        StepVerifier.create(customerMono)
+                .expectError(CustomerRuleException.class)
+                .verify();
+
+        Mockito.verify(customerPersistencePort,times(0)).saveCustomer(any(Customer.class));
+        Mockito.verify(customerEventPort,times(0)).publishCustomerSaved(any(Customer.class));
+        Mockito.verify(customerPersistencePort,times(1)).getCustomer(anyString());
+        Mockito.verify(listCustomerRule,times(1)).stream();
+    }
+
+    @Test
+    @DisplayName("Expect RuleStrategyException When Rule Code Do Not Exists2")
+    void Expect_RuleStrategyException_When_RuleCodeDoNotExists2(){
+        Customer customer1 = TestUtilCustomer.buildMockCustomer();
+        customer1.setAge(36);
+        when(listCustomerRule.stream()).thenReturn(Stream.empty());
+        Mono<Customer> customerMono= customerService.update("1",customer1);
+
+        StepVerifier.create(customerMono)
+                .expectError(RuleStrategyException.class)
+                .verify();
+
+        Mockito.verify(customerPersistencePort,times(0)).saveCustomer(any(Customer.class));
+        Mockito.verify(customerEventPort,times(0)).publishCustomerSaved(any(Customer.class));
+        Mockito.verify(customerPersistencePort,times(0)).getCustomer(anyString());
+        Mockito.verify(listCustomerRule,times(1)).stream();
+    }
+
+    @Test
+    @DisplayName("Expect CustomerNotFoundException When Customer Id Do Not Exists")
+    void Expect_CustomerNotFoundException_When_CustomerIdDoNotExists(){
+        Customer customer1 = TestUtilCustomer.buildMockCustomer();
+        when(customerPersistencePort.getCustomer(anyString())).thenReturn(Mono.empty());
+        when(listCustomerRule.stream()).thenReturn(Stream.of(new CompareAgeWithAgeOfBirthDate()));
+        Mono<Customer> customerMono= customerService.update("1", customer1);
+
+        StepVerifier.create(customerMono)
+                .expectError(CustomerNotFoundException.class)
+                .verify();
+
+        Mockito.verify(customerPersistencePort,times(0)).saveCustomer(any(Customer.class));
+        Mockito.verify(customerEventPort,times(0)).publishCustomerSaved(any(Customer.class));
+        Mockito.verify(customerPersistencePort,times(1)).getCustomer(anyString());
+        Mockito.verify(listCustomerRule,times(1)).stream();
+    }
+
 }

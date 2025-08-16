@@ -1,6 +1,7 @@
 package com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest;
 
 
+import com.fernando.manantial_ms_customers.domain.exceptions.CustomerNotFoundException;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerRuleException;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.ErrorResponse;
@@ -50,6 +51,20 @@ public class GlobalControllerAdvice {
                 .code(CUSTOMER_RULE_STRATEGY.getCode())
                 .type(FUNCTIONAL)
                 .message(CUSTOMER_RULE_STRATEGY.getMessage())
+                .details(List.of(e.getMessage()))
+                .timestamp(LocalDate.now().toString())
+                .build());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(CustomerNotFoundException.class)
+    public Mono<ErrorResponse> handleCustomerNotFoundException(
+            CustomerNotFoundException e) {
+        log.warn("⚠️ Warning by code rule ({}): {}",CUSTOMER_NOT_FOUND.getCode(),e.getMessage());
+        return Mono.just(ErrorResponse.builder()
+                .code(CUSTOMER_NOT_FOUND.getCode())
+                .type(FUNCTIONAL)
+                .message(CUSTOMER_NOT_FOUND.getMessage())
                 .details(List.of(e.getMessage()))
                 .timestamp(LocalDate.now().toString())
                 .build());

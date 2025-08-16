@@ -3,6 +3,7 @@ package com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest;
 import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersUseCase;
 import com.fernando.manantial_ms_customers.application.ports.input.GetMetricsUseCase;
 import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
+import com.fernando.manantial_ms_customers.application.ports.input.UpdateCustomerUseCase;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.mappers.CustomerRestMapper;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.request.CustomerRequest;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.CustomerResponse;
@@ -29,6 +30,7 @@ public class CustomerRestAdapter {
     private final SaveCustomerUseCase saveCustomerUseCase;
     private final CustomerRestMapper customerRestMapper;
     private final GetMetricsUseCase getMetricsUseCase;
+    private final UpdateCustomerUseCase updateCustomerUseCase;
 
     @GetMapping
     @Operation(summary = "Find all customer available")
@@ -55,5 +57,17 @@ public class CustomerRestAdapter {
     @ApiResponse(responseCode = "200", description = "Obtain metric about average and standard Deviation of age customers")
     public Mono<ResponseEntity<MetricResponse>> getMetrics(){
         return getMetricsUseCase.getMetrics().flatMap(metrics->Mono.just(ResponseEntity.ok(customerRestMapper.metricToMetricResponse(metrics))));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update customer")
+    @ApiResponse(responseCode = "200", description = "Customer updated correctly")
+    @ApiResponse(responseCode = "400", description = "Customer failed to the update by some field")
+    public Mono<ResponseEntity<CustomerResponse>> updateCustomer(@PathVariable("id") String id,  @Valid @RequestBody CustomerRequest rq){
+        return updateCustomerUseCase.update(id,customerRestMapper.customerRequestToCustomer(rq)).flatMap(
+                customer ->{
+                    return Mono.just(ResponseEntity.ok(customerRestMapper.customerToCustomerResponse(customer)));
+                }
+        );
     }
 }

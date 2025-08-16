@@ -4,6 +4,8 @@ import com.fernando.manantial_ms_customers.Utils.TestUtilCustomer;
 import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersUseCase;
 import com.fernando.manantial_ms_customers.application.ports.input.GetMetricsUseCase;
 import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
+import com.fernando.manantial_ms_customers.application.ports.input.UpdateCustomerUseCase;
+import com.fernando.manantial_ms_customers.domain.exceptions.CustomerNotFoundException;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerRuleException;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
 import com.fernando.manantial_ms_customers.domain.models.Customer;
@@ -25,6 +27,7 @@ import reactor.core.publisher.Mono;
 import static com.fernando.manantial_ms_customers.infrastructure.utils.ErrorCatalog.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -45,6 +48,9 @@ class GlobalControllerAdviceTest {
 
     @MockitoBean
     private GetMetricsUseCase getMetricsUseCase;
+
+    @MockitoBean
+    private UpdateCustomerUseCase updateCustomerUseCase;
 
     @Test
     @DisplayName("Expect WebExchangeBindException When Name Customer Is Not Defined")
@@ -142,6 +148,32 @@ class GlobalControllerAdviceTest {
                     assertEquals(response.code(),CUSTOMER_INTERNAL_SERVER_ERROR.getCode());
                     assertEquals(response.message(),CUSTOMER_INTERNAL_SERVER_ERROR.getMessage());
                 });
+    }
+
+    @Test
+    @DisplayName("Expect CustomerNotFoundException When CustomerID Do Not Exists")
+    void Expect_CustomerNotFoundException_When_CustomerIdDoNotExists(){
+        CustomerRequest customerRequest= TestUtilCustomer.buildMockCustomerRequest();
+        Customer customer = TestUtilCustomer.buildMockCustomer();
+        CustomerResponse customerResponse= TestUtilCustomer.buildMockCustomerResponse();
+        when(updateCustomerUseCase.update(anyString(),any(Customer.class))).thenThrow(new CustomerNotFoundException("Customer not found: ".concat(customer.getId())));
+        when(customerRestMapper.customerRequestToCustomer(any())).thenReturn(customer);
+
+        webTestClient.put()
+                .uri("/v1/customers/{id}","1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(customerRequest)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody(ErrorResponse.class)
+                .value(response->{
+                    assertEquals(response.code(),CUSTOMER_NOT_FOUND.getCode());
+                    assertEquals(response.message(),CUSTOMER_NOT_FOUND.getMessage());
+                });
+
+        Mockito.verify(updateCustomerUseCase,times(1)).update(anyString(),any(Customer.class));
+        Mockito.verify(customerRestMapper,times(1)).customerRequestToCustomer(any(CustomerRequest.class));
+        Mockito.verify(customerRestMapper,times(0)).customerToCustomerResponse(any(Customer.class));
     }
 
 }

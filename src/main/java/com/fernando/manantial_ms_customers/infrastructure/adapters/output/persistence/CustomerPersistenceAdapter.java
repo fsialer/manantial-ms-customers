@@ -23,4 +23,9 @@ public class CustomerPersistenceAdapter implements CustomerPersistencePort {
     public Mono<Customer> saveCustomer(Customer customer) {
         return customerPersistenceMapper.customerDocumentMonoToCustomerMono(customerRepository.save(customerPersistenceMapper.customerToCustomerDocument(customer)));
     }
+
+    @Override
+    public Mono<Customer> getCustomer(String id) {
+        return customerPersistenceMapper.customerDocumentMonoToCustomerMono(customerRepository.findById(id));
+    }
 }
