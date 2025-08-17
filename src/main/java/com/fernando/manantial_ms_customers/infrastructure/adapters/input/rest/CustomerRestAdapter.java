@@ -1,9 +1,6 @@
 package com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest;
 
-import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersUseCase;
-import com.fernando.manantial_ms_customers.application.ports.input.GetMetricsUseCase;
-import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
-import com.fernando.manantial_ms_customers.application.ports.input.UpdateCustomerUseCase;
+import com.fernando.manantial_ms_customers.application.ports.input.*;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.mappers.CustomerRestMapper;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.request.CustomerRequest;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.CustomerResponse;
@@ -13,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -31,6 +29,7 @@ public class CustomerRestAdapter {
     private final CustomerRestMapper customerRestMapper;
     private final GetMetricsUseCase getMetricsUseCase;
     private final UpdateCustomerUseCase updateCustomerUseCase;
+    private final DeleteCustomerUseCase deleteCustomerUseCase;
 
     @GetMapping
     @Operation(summary = "Find all customer available")
@@ -69,5 +68,14 @@ public class CustomerRestAdapter {
                     return Mono.just(ResponseEntity.ok(customerRestMapper.customerToCustomerResponse(customer)));
                 }
         );
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete customer")
+    @ApiResponse(responseCode = "204", description = "Customer deleted correctly")
+    @ApiResponse(responseCode = "400", description = "Customer not found")
+    public Mono<Void> updateCustomer(@PathVariable("id") String id){
+        return deleteCustomerUseCase.delete(id);
     }
 }

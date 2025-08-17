@@ -1,10 +1,7 @@
 package com.fernando.manantial_ms_customers.infraestructure.adapter.input.rest;
 
 import com.fernando.manantial_ms_customers.Utils.TestUtilCustomer;
-import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersUseCase;
-import com.fernando.manantial_ms_customers.application.ports.input.GetMetricsUseCase;
-import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
-import com.fernando.manantial_ms_customers.application.ports.input.UpdateCustomerUseCase;
+import com.fernando.manantial_ms_customers.application.ports.input.*;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerNotFoundException;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerRuleException;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
@@ -51,6 +48,9 @@ class GlobalControllerAdviceTest {
 
     @MockitoBean
     private UpdateCustomerUseCase updateCustomerUseCase;
+
+    @MockitoBean
+    private DeleteCustomerUseCase deleteCustomerUseCase;
 
     @Test
     @DisplayName("Expect WebExchangeBindException When Name Customer Is Not Defined")

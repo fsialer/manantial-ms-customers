@@ -114,5 +114,15 @@ class CustomerPersistenceAdapterTest {
 
     }
 
+    @Test
+    @DisplayName("When CustomerId Exists Expect Delete Customer By Id")
+    void When_CustomerIdExists_Expect_DeleteCustomerById(){
+        when(customerRepository.deleteById(anyString())).thenReturn(Mono.empty());
+        Mono<Void> delete=customerPersistenceAdapter.deleteCustomer("1");
+        StepVerifier.create(delete)
+                .verifyComplete();
+        Mockito.verify(customerRepository,times(1)).deleteById(anyString());
+    }
+
 
 }

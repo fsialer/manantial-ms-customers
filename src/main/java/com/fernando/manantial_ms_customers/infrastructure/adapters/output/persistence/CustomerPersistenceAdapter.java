@@ -28,4 +28,9 @@ public class CustomerPersistenceAdapter implements CustomerPersistencePort {
     public Mono<Customer> getCustomer(String id) {
         return customerPersistenceMapper.customerDocumentMonoToCustomerMono(customerRepository.findById(id));
     }
+
+    @Override
+    public Mono<Void> deleteCustomer(String id) {
+        return customerRepository.deleteById(id);
+    }
 }

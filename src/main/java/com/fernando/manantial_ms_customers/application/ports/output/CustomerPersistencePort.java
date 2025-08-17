@@ -8,4 +8,5 @@ public interface CustomerPersistencePort {
     Flux<Customer> getCustomers();
     Mono<Customer> saveCustomer(Customer customer);
     Mono<Customer> getCustomer(String id);
+    Mono<Void> deleteCustomer(String id);
 }

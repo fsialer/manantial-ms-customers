@@ -1,9 +1,6 @@
 package com.fernando.manantial_ms_customers.domain.services;
 
-import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersUseCase;
-import com.fernando.manantial_ms_customers.application.ports.input.GetMetricsUseCase;
-import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
-import com.fernando.manantial_ms_customers.application.ports.input.UpdateCustomerUseCase;
+import com.fernando.manantial_ms_customers.application.ports.input.*;
 import com.fernando.manantial_ms_customers.application.ports.output.CalculateMetricsPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerEventPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerPersistencePort;
@@ -23,7 +20,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase, GetMetricsUseCase, UpdateCustomerUseCase {
+public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase, GetMetricsUseCase, UpdateCustomerUseCase, DeleteCustomerUseCase {
 
     private final CustomerPersistencePort customerPersistencePort;
     private final List<CustomerRule> listCustomerRule;
@@ -91,5 +88,14 @@ public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase
                                             .doOnSuccess(customerEventPort::publishCustomerSaved);
                                 }
                                 )).doOnError(e->log.error("Error: {}",e.getMessage()));
+    }
+
+    @Override
+    public Mono<Void> delete(String id) {
+        return customerPersistencePort.getCustomer(id)
+                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found: ".concat(id))))
+                .flatMap(customer->customerPersistencePort.deleteCustomer(id))
+                .doOnSuccess(unused -> customerEventPort.publishCustomerDeleted(id))
+                .then();
     }
 }

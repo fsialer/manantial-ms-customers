@@ -235,4 +235,32 @@ class CustomerServicesTest {
         Mockito.verify(listCustomerRule,times(1)).stream();
     }
 
+    @Test
+    @DisplayName("When CustomerId Exists Expect Delete Customer By Id")
+    void When_CustomerIdExists_Expect_DeleteCustomerById(){
+        Customer customer=TestUtilCustomer.buildMockCustomer();
+        when(customerPersistencePort.getCustomer(anyString())).thenReturn(Mono.just(customer));
+        when(customerPersistencePort.deleteCustomer(anyString())).thenReturn(Mono.empty());
+        doNothing().when(customerEventPort).publishCustomerDeleted(anyString());
+        Mono<Void> customerMono = customerService.delete("1");
+        StepVerifier.create(customerMono)
+                .verifyComplete();
+        Mockito.verify(customerPersistencePort,times(1)).getCustomer(anyString());
+        Mockito.verify(customerPersistencePort,times(1)).deleteCustomer(anyString());
+        Mockito.verify(customerEventPort,times(1)).publishCustomerDeleted(anyString());
+    }
+
+    @Test
+    @DisplayName("Expect CustomerNotFoundException When CustomerId Is Incorrect")
+    void Expect_CustomerNotFoundException_When_CustomerIdIsIncorrect(){
+        when(customerPersistencePort.getCustomer(anyString())).thenReturn(Mono.empty());
+        Mono<Void> customerMono = customerService.delete("1");
+        StepVerifier.create(customerMono)
+                .expectError(CustomerNotFoundException.class)
+                        .verify();
+        Mockito.verify(customerPersistencePort,times(1)).getCustomer(anyString());
+        Mockito.verify(customerPersistencePort,times(0)).deleteCustomer(anyString());
+        Mockito.verify(customerEventPort,times(0)).publishCustomerDeleted(anyString());
+    }
+
 }

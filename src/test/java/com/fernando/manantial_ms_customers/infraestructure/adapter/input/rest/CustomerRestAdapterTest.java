@@ -1,10 +1,7 @@
 package com.fernando.manantial_ms_customers.infraestructure.adapter.input.rest;
 
 import com.fernando.manantial_ms_customers.Utils.TestUtilCustomer;
-import com.fernando.manantial_ms_customers.application.ports.input.GetCustomersUseCase;
-import com.fernando.manantial_ms_customers.application.ports.input.GetMetricsUseCase;
-import com.fernando.manantial_ms_customers.application.ports.input.SaveCustomerUseCase;
-import com.fernando.manantial_ms_customers.application.ports.input.UpdateCustomerUseCase;
+import com.fernando.manantial_ms_customers.application.ports.input.*;
 import com.fernando.manantial_ms_customers.domain.models.Customer;
 import com.fernando.manantial_ms_customers.domain.models.Metric;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.CustomerRestAdapter;
@@ -46,6 +43,9 @@ class CustomerRestAdapterTest {
 
     @MockitoBean
     private UpdateCustomerUseCase updateCustomerUseCase;
+
+    @MockitoBean
+    private DeleteCustomerUseCase deleteCustomerUseCase;
 
 
     @Test
@@ -151,5 +151,18 @@ class CustomerRestAdapterTest {
         Mockito.verify(updateCustomerUseCase,times(1)).update(anyString(),any());
         Mockito.verify(customerRestMapper,times(1)).customerRequestToCustomer(any());
         Mockito.verify(customerRestMapper,times(1)).customerToCustomerResponse(any());
+    }
+
+    @Test
+    @DisplayName("When Have CustomerId Correct Expect Delete Customer")
+    void When_HaveCustomerIdCorrect_Expect_DeleteCustomer(){
+        when(deleteCustomerUseCase.delete(anyString())).thenReturn(Mono.empty());
+        webTestClient.delete()
+                .uri("/v1/customers/{id}","1")
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody()
+                .isEmpty();
+        Mockito.verify(deleteCustomerUseCase,times(1)).delete(anyString());
     }
 }

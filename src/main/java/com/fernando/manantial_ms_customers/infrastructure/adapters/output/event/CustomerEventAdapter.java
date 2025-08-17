@@ -16,12 +16,22 @@ public class CustomerEventAdapter implements CustomerEventPort {
 
     @Override
     public void publishCustomerSaved(Customer customer) {
-        kafkaTemplate.send("customer-topic",customer).whenComplete((result,ex)->{
-            if(ex !=null){
-                log.error("Error, send message: {}", ex.getMessage());
+        this.sendMessage("customer-topic",customer);
+    }
+
+    @Override
+    public void publishCustomerDeleted(String id) {
+        this.sendMessage("delete-customer-topic",id);
+    }
+
+    private <T> void sendMessage(String topic, T message) {
+        kafkaTemplate.send(topic, message).whenComplete((result, ex) -> {
+            if (ex != null) {
+                log.error("❌ Error sending message to topic '{}': {}", topic, ex.getMessage(), ex);
+            } else {
+                log.info("✅ Message sent to topic '{}': {}", topic, result.getProducerRecord().value());
+                log.info("Partition: {}, Offset: {}", result.getRecordMetadata().partition(), result.getRecordMetadata().offset());
             }
-            log.info("✅ Message sended : {}", result.getProducerRecord().value());
-            log.info("Partition {}, Offset {}",result.getRecordMetadata().partition(),result.getRecordMetadata().offset());
         });
     }
 }

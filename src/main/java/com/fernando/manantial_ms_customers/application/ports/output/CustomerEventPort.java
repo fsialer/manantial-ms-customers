@@ -4,4 +4,5 @@ import com.fernando.manantial_ms_customers.domain.models.Customer;
 
 public interface CustomerEventPort {
     void publishCustomerSaved(Customer customer);
+    void publishCustomerDeleted(String id);
 }
