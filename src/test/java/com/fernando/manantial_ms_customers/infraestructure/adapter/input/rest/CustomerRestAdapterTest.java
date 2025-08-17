@@ -47,6 +47,9 @@ class CustomerRestAdapterTest {
     @MockitoBean
     private DeleteCustomerUseCase deleteCustomerUseCase;
 
+    @MockitoBean
+    private GetCustomerUseCase getCustomerUseCase;
+
 
     @Test
     @DisplayName("When Request Information Customer Expect A List Customers Available")
@@ -164,5 +167,26 @@ class CustomerRestAdapterTest {
                 .expectBody()
                 .isEmpty();
         Mockito.verify(deleteCustomerUseCase,times(1)).delete(anyString());
+    }
+
+    @Test
+    @DisplayName("When Have CustomerId Correct Expect Customer Information")
+    void When_HaveCustomerIdCorrect_Expect_CustomerInformation(){
+        Customer customer = TestUtilCustomer.buildMockCustomer();
+        CustomerResponse customerResponse = TestUtilCustomer.buildMockCustomerResponse();
+        when(getCustomerUseCase.getCustomer(anyString())).thenReturn(Mono.just(customer));
+        when(customerRestMapper.customerToCustomerResponse(any())).thenReturn(customerResponse);
+        webTestClient.get()
+                .uri("/v1/customers/{id}","1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(customerResponse.id())
+                .jsonPath("$.name").isEqualTo(customerResponse.name())
+                .jsonPath("$.lastName").isEqualTo(customerResponse.lastName())
+                .jsonPath("$.age").isEqualTo(customerResponse.age())
+                .jsonPath("$.birthDate").isEqualTo(customerResponse.birthDate());
+        Mockito.verify(getCustomerUseCase,times(1)).getCustomer(anyString());
+        Mockito.verify(customerRestMapper,times(1)).customerToCustomerResponse(any());
     }
 }

@@ -20,7 +20,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase, GetMetricsUseCase, UpdateCustomerUseCase, DeleteCustomerUseCase {
+public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase, GetMetricsUseCase, UpdateCustomerUseCase, DeleteCustomerUseCase, GetCustomerUseCase {
 
     private final CustomerPersistencePort customerPersistencePort;
     private final List<CustomerRule> listCustomerRule;
@@ -97,5 +97,11 @@ public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase
                 .flatMap(customer->customerPersistencePort.deleteCustomer(id))
                 .doOnSuccess(unused -> customerEventPort.publishCustomerDeleted(id))
                 .then();
+    }
+
+    @Override
+    public Mono<Customer> getCustomer(String id) {
+        return customerPersistencePort.getCustomer(id)
+                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found: ".concat(id))));
     }
 }

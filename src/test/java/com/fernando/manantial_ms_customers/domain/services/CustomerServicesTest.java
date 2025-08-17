@@ -1,6 +1,7 @@
 package com.fernando.manantial_ms_customers.domain.services;
 
 import com.fernando.manantial_ms_customers.Utils.TestUtilCustomer;
+import com.fernando.manantial_ms_customers.application.ports.input.GetCustomerUseCase;
 import com.fernando.manantial_ms_customers.application.ports.output.CalculateMetricsPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerEventPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerPersistencePort;
@@ -218,8 +219,8 @@ class CustomerServicesTest {
     }
 
     @Test
-    @DisplayName("Expect CustomerNotFoundException When Customer Id Do Not Exists")
-    void Expect_CustomerNotFoundException_When_CustomerIdDoNotExists(){
+    @DisplayName("Expect CustomerNotFoundException When Customer Id Do Not Exists In Update")
+    void Expect_CustomerNotFoundException_When_CustomerIdDoNotExistsInUpdate(){
         Customer customer1 = TestUtilCustomer.buildMockCustomer();
         when(customerPersistencePort.getCustomer(anyString())).thenReturn(Mono.empty());
         when(listCustomerRule.stream()).thenReturn(Stream.of(new CompareAgeWithAgeOfBirthDate()));
@@ -262,5 +263,34 @@ class CustomerServicesTest {
         Mockito.verify(customerPersistencePort,times(0)).deleteCustomer(anyString());
         Mockito.verify(customerEventPort,times(0)).publishCustomerDeleted(anyString());
     }
+
+    @Test
+    @DisplayName("When CustomerId Exists Expect Customer Information")
+    void When_CustomerIdExists_Expect_CustomerInformation(){
+        Customer customer=TestUtilCustomer.buildMockCustomer();
+        when(customerPersistencePort.getCustomer(anyString())).thenReturn(Mono.just(customer));
+        Mono<Customer> customerMono = customerService.getCustomer("1");
+        StepVerifier.create(customerMono)
+                .expectNextMatches(customerInfo->
+                        customerInfo.getId().equals(customer.getId())
+                                && customerInfo.getName().equals(customer.getName())
+                                && customerInfo.getLastName().equals(customer.getLastName())
+                                && customerInfo.getAge().equals(customer.getAge())
+                                && customerInfo.getBirthDate().equals(customer.getBirthDate()))
+                .verifyComplete();
+        Mockito.verify(customerPersistencePort,times(1)).getCustomer(anyString());
+    }
+
+    @Test
+    @DisplayName("When CustomerId Exists Expect Customer Information")
+    void Expect_CustomerNotFoundException_When_CustomerIdDoNotExists(){
+        when(customerPersistencePort.getCustomer(anyString())).thenReturn(Mono.empty());
+        Mono<Customer> customerMono = customerService.getCustomer("1");
+        StepVerifier.create(customerMono)
+                .expectError(CustomerNotFoundException.class)
+                .verify();
+        Mockito.verify(customerPersistencePort,times(1)).getCustomer(anyString());
+    }
+
 
 }

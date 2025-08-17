@@ -30,6 +30,7 @@ public class CustomerRestAdapter {
     private final GetMetricsUseCase getMetricsUseCase;
     private final UpdateCustomerUseCase updateCustomerUseCase;
     private final DeleteCustomerUseCase deleteCustomerUseCase;
+    private final GetCustomerUseCase getCustomerUseCase;
 
     @GetMapping
     @Operation(summary = "Find all customer available")
@@ -62,20 +63,28 @@ public class CustomerRestAdapter {
     @Operation(summary = "Update customer")
     @ApiResponse(responseCode = "200", description = "Customer updated correctly")
     @ApiResponse(responseCode = "400", description = "Customer failed to the update by some field")
+    @ApiResponse(responseCode = "404", description = "Customer not found")
     public Mono<ResponseEntity<CustomerResponse>> updateCustomer(@PathVariable("id") String id,  @Valid @RequestBody CustomerRequest rq){
         return updateCustomerUseCase.update(id,customerRestMapper.customerRequestToCustomer(rq)).flatMap(
-                customer ->{
-                    return Mono.just(ResponseEntity.ok(customerRestMapper.customerToCustomerResponse(customer)));
-                }
-        );
+                customer ->Mono.just(ResponseEntity.ok(customerRestMapper.customerToCustomerResponse(customer))));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete customer")
     @ApiResponse(responseCode = "204", description = "Customer deleted correctly")
-    @ApiResponse(responseCode = "400", description = "Customer not found")
-    public Mono<Void> updateCustomer(@PathVariable("id") String id){
+    @ApiResponse(responseCode = "404", description = "Customer not found")
+    public Mono<Void> deleteCustomer(@PathVariable("id") String id){
         return deleteCustomerUseCase.delete(id);
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get customer")
+    @ApiResponse(responseCode = "200", description = "Customer information")
+    @ApiResponse(responseCode = "404", description = "Customer not found")
+    public Mono<ResponseEntity<CustomerResponse>> getCustomer(@PathVariable("id") String id){
+        return getCustomerUseCase.getCustomer(id).flatMap(
+                customer ->  Mono.just(ResponseEntity.ok(customerRestMapper.customerToCustomerResponse(customer))));
     }
 }
