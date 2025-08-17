@@ -21,7 +21,7 @@ function ejecutar_manifiestos() {
 function crear_namespace(){
   echo "‚åõ Verificando namespace 'ingress-nginx'..."
   if ! kubectl get namespace ingress-nginx &> /dev/null; then
-    echo "Ì≥¶ Instalando ingress-nginx y creando namespace..."
+    echo "ÔøΩ Instalando ingress-nginx y creando namespace..."
     helm upgrade --install ingress-nginx ingress-nginx \
       --repo https://kubernetes.github.io/ingress-nginx \
       --namespace ingress-nginx \
@@ -32,7 +32,7 @@ function crear_namespace(){
 
   echo "‚åõ Verificando namespace '$environment'..."
   if ! kubectl get namespace "$environment" &> /dev/null; then
-    echo "Ì≥Å Creando namespace '$environment'..."
+    echo "ÔøΩ Creando namespace '$environment'..."
     kubectl create namespace "$environment"
   else
     echo "‚úÖ Namespace '$environment' ya existe."
@@ -76,3 +76,4 @@ instalar_kafka
 instalar_keycloak
 ejecutar_manifiestos
 echo "‚úÖ Instalacion completa de $environment"
+kubectl get svc ingress-nginx-controller -n ingress-nginx
