@@ -9,17 +9,19 @@ s3_bucket_name = "manantial-bucket"
 
 vpc_private_subnet = {
   subnet1 = {
-      "cidr" : "10.1.1.0/24"
+      "cidr" : "10.0.1.0/24"
       "availability_zone" : "us-east-1a"
   }
 }
 
 vpc_public_subnet = {
   subnet1 = {
-    "cidr" : "10.2.1.0/24"
+    "cidr" : "10.0.2.0/24"
     "availability_zone" : "us-east-1a"
   }
 }
+
+ssh_key_name = "my-keypair"
 
 eks_cluster_name="manantial_cluster"
 eks_iam_role_name = "manantial_eks_role"

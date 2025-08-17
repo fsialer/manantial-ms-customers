@@ -37,6 +37,8 @@ vpc_public_subnet = {
   }
 }
 
+ssh_key_name = "my-keypair"
+
 eks_cluster_name="manantial_cluster"
 eks_iam_role_name = "manantial_eks_role"
 eks_types_instance = [

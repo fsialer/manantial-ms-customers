@@ -81,3 +81,8 @@ variable "eks_update_config_max" {
   default     = 1
 }
 
+
+variable "ssh_key_name" {
+  description = "Nombre del key ssh"
+  type        = string
+}

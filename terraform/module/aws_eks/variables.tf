@@ -16,6 +16,10 @@ variable "private_subnets" {
   type = list(string)
 }
 
+variable "public_subnets" {
+  type = list(string)
+}
+
 variable "types_instance" {
   type    = list(string)
   default = []
@@ -49,4 +53,14 @@ variable "update_config_max" {
   description = "Cantidad de pods que puede actualizar a la vez."
   type = number
   default = 1
+}
+
+variable "vpc_id"{
+  description = "Identificador del vpc"
+  type = string
+}
+
+variable "ssh_key_name" {
+  description = "Nombre del key ssh"
+  type = string
 }

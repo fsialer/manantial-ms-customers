@@ -25,10 +25,13 @@ module "aws_vpc" {
 module "aws_eks" {
   source            = "../module/aws_eks"
   tags              = var.tags
+  vpc_id            = module.aws_vpc.vpc_general.vpc_id
+  ssh_key_name      = var.ssh_key_name
   cluster_name      = "${var.eks_cluster_name}-${terraform.workspace}"
+  public_subnets    = module.aws_vpc.public_subnets
   private_subnets   = module.aws_vpc.private_subnets
   iam_role_name     = "${var.eks_iam_role_name}-${terraform.workspace}"
-  types_instance     = var.eks_types_instance
+  types_instance    = var.eks_types_instance
   type_ami          = var.eks_type_ami
   update_config_max = var.eks_update_config_max
   scaling_desired   = var.eks_scaling_desired
