@@ -87,7 +87,7 @@ services:
       - keycloak_data:/opt/keycloak/data
 
   customer-service:
-    image: manantial-ms-customers:latest
+    image: feralexis007/manantial-customers-service:dev-93c4163
     container_name: customer-service
     ports:
       - "8081:8081"
@@ -145,7 +145,7 @@ services:
       - customers-net
 
   manantial-gateway:
-    image: manantial-gateway:latest
+    image: feralexis007/manantial-gateway:dev-dbc60d9
     container_name: manantial-gateway
     environment:
       AUTH_SERVER: ${AUTH_SERVER}
