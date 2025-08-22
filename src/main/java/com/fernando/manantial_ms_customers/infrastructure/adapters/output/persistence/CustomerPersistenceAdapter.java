@@ -33,4 +33,15 @@ public class CustomerPersistenceAdapter implements CustomerPersistencePort {
     public Mono<Void> deleteCustomer(String id) {
         return customerRepository.deleteById(id);
     }
+
+    @Override
+    public Flux<Customer> getCustomersPaged(int page, int size) {
+        return customerRepository.getCustomerPaginated(page,size)
+                        .transform(customerPersistenceMapper::customerDocumenFluxtoToCustomerFlux);
+    }
+
+    @Override
+    public Mono<Long> count() {
+        return customerRepository.count();
+    }
 }

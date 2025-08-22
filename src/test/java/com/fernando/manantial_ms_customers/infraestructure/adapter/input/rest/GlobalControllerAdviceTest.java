@@ -55,6 +55,12 @@ class GlobalControllerAdviceTest {
     @MockitoBean
     private GetCustomerUseCase getCustomerUseCase;
 
+    @MockitoBean
+    private GetCustomerPaginatedUseCase getCustomerPaginatedUseCase;
+
+    @MockitoBean
+    private GetCustomerCountUseCase getCustomerCountUseCase;
+
     @Test
     @DisplayName("Expect WebExchangeBindException When Name Customer Is Not Defined")
     void Expect_WebExchangeBindException_When_NameCustomerIsNotDefined(){

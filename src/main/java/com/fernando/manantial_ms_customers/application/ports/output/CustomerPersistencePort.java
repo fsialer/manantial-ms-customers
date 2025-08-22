@@ -9,4 +9,6 @@ public interface CustomerPersistencePort {
     Mono<Customer> saveCustomer(Customer customer);
     Mono<Customer> getCustomer(String id);
     Mono<Void> deleteCustomer(String id);
+    Flux<Customer> getCustomersPaged(int page, int size);
+    Mono<Long> count();
 }

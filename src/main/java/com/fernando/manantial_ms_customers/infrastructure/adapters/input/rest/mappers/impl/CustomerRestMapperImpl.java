@@ -9,6 +9,8 @@ import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.mo
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 @Component
 public class CustomerRestMapperImpl implements CustomerRestMapper {
     @Override
@@ -54,5 +56,19 @@ public class CustomerRestMapperImpl implements CustomerRestMapper {
                 .average(metric.getAverage())
                 .standardDeviation(metric.getStandardDeviation())
                 .build();
+    }
+
+    @Override
+    public List<CustomerResponse> customerListToCustomerResponseList(List<Customer> list) {
+        return list.stream().map(customer->{
+            return CustomerResponse.builder()
+                    .id(customer.getId())
+                    .name(customer.getName())
+                    .lastName(customer.getLastName())
+                    .age(customer.getAge())
+                    .birthDate(customer.getBirthDate())
+                    .lifeExpectancy(customer.getLifeExpectancy())
+                    .build();
+        }).toList();
     }
 }

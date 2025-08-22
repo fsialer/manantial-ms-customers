@@ -292,5 +292,44 @@ class CustomerServicesTest {
         Mockito.verify(customerPersistencePort,times(1)).getCustomer(anyString());
     }
 
+    @Test
+    @DisplayName("When Customer Found by Page And Size Expect Information Customer Paginated")
+    void When_CustomerFoundByPageAndSize_Expect_InformationCustomerPaginated(){
+        Customer customer1 = TestUtilCustomer.buildMockCustomer();
+        Customer customer2 = TestUtilCustomer.buildMockCustomer2();
+        Flux<Customer> customers=Flux.just(customer1,customer2);
+        when(customerPersistencePort.getCustomersPaged(anyInt(),anyInt())).thenReturn(customers);
+        Flux<Customer> customerFlux = customerService.getPaginated(1,2);
+        StepVerifier.create(customerFlux)
+                .consumeNextWith(customer->{
+                    assertEquals(customer.getName(),customer1.getName());
+                    assertEquals(customer.getLastName(),customer1.getLastName());
+                    assertEquals(customer.getAge(),customer1.getAge());
+                    assertEquals(customer.getBirthDate(),customer1.getBirthDate());
+                    assertEquals(customer.getLifeExpectancy(),customer1.getLifeExpectancy());
+                })
+                .consumeNextWith(customer -> {
+                    assertEquals(customer.getName(),customer2.getName());
+                    assertEquals(customer.getLastName(),customer2.getLastName());
+                    assertEquals(customer.getAge(),customer2.getAge());
+                    assertEquals(customer.getBirthDate(),customer2.getBirthDate());
+                    assertEquals(customer.getLifeExpectancy(),customer2.getLifeExpectancy());
+                })
+                .verifyComplete();
+        Mockito.verify(customerPersistencePort,times(1)).getCustomersPaged(anyInt(),anyInt());
+    }
+
+    @Test
+    @DisplayName("When Customer Have Data Expect A Quantity")
+    void When_CustomerHaveData_Expect_AQuantity(){
+        when(customerPersistencePort.count()).thenReturn(Mono.just(2L));
+        Mono<Long> quantity = customerService.getCount();
+        StepVerifier.create(quantity)
+                .consumeNextWith(quantity2->{
+                    assertEquals(2L, quantity2);
+                })
+                .verifyComplete();
+        Mockito.verify(customerPersistencePort,times(1)).count();
+    }
 
 }

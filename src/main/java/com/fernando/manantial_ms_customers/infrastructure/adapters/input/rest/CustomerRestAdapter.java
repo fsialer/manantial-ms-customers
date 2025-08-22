@@ -5,6 +5,7 @@ import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.ma
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.request.CustomerRequest;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.CustomerResponse;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.MetricResponse;
+import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.PaginatedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +18,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,6 +33,8 @@ public class CustomerRestAdapter {
     private final UpdateCustomerUseCase updateCustomerUseCase;
     private final DeleteCustomerUseCase deleteCustomerUseCase;
     private final GetCustomerUseCase getCustomerUseCase;
+    private final GetCustomerPaginatedUseCase getCustomerPaginatedUseCase;
+    private final GetCustomerCountUseCase getCustomerCountUseCase;
 
     @GetMapping
     @Operation(summary = "Find all customer available")
@@ -86,5 +90,22 @@ public class CustomerRestAdapter {
     public Mono<ResponseEntity<CustomerResponse>> getCustomer(@PathVariable("id") String id){
         return getCustomerUseCase.getCustomer(id).flatMap(
                 customer ->  Mono.just(ResponseEntity.ok(customerRestMapper.customerToCustomerResponse(customer))));
+    }
+
+    @GetMapping("/paginated")
+    @Operation(summary = "Find all customer available by pagination")
+    @ApiResponse(responseCode = "200",description = "A lists customers available")
+    public  Mono<PaginatedResponse<CustomerResponse>> getCustomersPaginated(@RequestParam(name = "page", defaultValue = "1") int page,@RequestParam(name = "size",defaultValue = "12") int size){
+        return getCustomerPaginatedUseCase.getPaginated(page, size)
+                .collectList()
+                .zipWith(getCustomerCountUseCase.getCount()) // total de elementos
+                .map(tuple -> {
+                    List<CustomerResponse> customers = customerRestMapper.customerListToCustomerResponseList(tuple.getT1());
+                    long totalElements = tuple.getT2();
+                    int totalPages = (int) Math.ceil((double) totalElements / size);
+                    return new PaginatedResponse<>(
+                            customers, page, size, totalElements, totalPages
+                    );
+                });
     }
 }

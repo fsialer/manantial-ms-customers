@@ -18,8 +18,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -122,6 +121,52 @@ class CustomerPersistenceAdapterTest {
         StepVerifier.create(delete)
                 .verifyComplete();
         Mockito.verify(customerRepository,times(1)).deleteById(anyString());
+    }
+
+    @Test
+    @DisplayName("When Customers Search By Page And Size Expect A List Customers Paginated")
+    void When_CustomersSearchByPageAndSize_Expect_AListCustomersPaginated(){
+        Customer customer1 = TestUtilCustomer.buildMockCustomer();
+        Customer customer2 = TestUtilCustomer.buildMockCustomer2();
+
+        CustomerDocument customerDocument1 = TestUtilCustomer.buildMockCustomerDocument();
+        CustomerDocument customerDocument2 = TestUtilCustomer.buildMockCustomerDocument2();
+        when(customerPersistenceMapper.customerDocumenFluxtoToCustomerFlux(any(Flux.class))).thenReturn(Flux.just(customer1,customer2));
+        when(customerRepository.getCustomerPaginated(anyInt(),anyInt())).thenReturn(Flux.just(customerDocument1,customerDocument2));
+
+        Flux<Customer> customerFlux=customerPersistenceAdapter.getCustomersPaged(1,2);
+
+        StepVerifier.create(customerFlux)
+                .consumeNextWith(customer -> {
+                    assertEquals(customer.getId(),customer1.getId());
+                    assertEquals(customer.getName(),customer1.getName());
+                    assertEquals(customer.getLastName(),customer1.getLastName());
+                    assertEquals(customer.getAge(),customer1.getAge());
+                    assertEquals(customer.getBirthDate(),customer1.getBirthDate());
+                })
+                .consumeNextWith(customer -> {
+                    assertEquals(customer.getId(),customer2.getId());
+                    assertEquals(customer.getName(),customer2.getName());
+                    assertEquals(customer.getLastName(),customer2.getLastName());
+                    assertEquals(customer.getAge(),customer2.getAge());
+                    assertEquals(customer.getBirthDate(),customer2.getBirthDate());
+                })
+                .verifyComplete();
+        Mockito.verify(customerPersistenceMapper,times(1)).customerDocumenFluxtoToCustomerFlux(any(Flux.class));
+        Mockito.verify(customerRepository,times(1)).getCustomerPaginated(anyInt(),anyInt());
+    }
+
+    @Test
+    @DisplayName("When Customer Have Data Availability Expect A Quantity")
+    void When_CustomerHaveDataAvailability_Expect_AQuantity(){
+        when(customerRepository.count()).thenReturn(Mono.just(2L));
+        Mono<Long> quantity = customerPersistenceAdapter.count();
+        StepVerifier.create(quantity)
+                .consumeNextWith(quantity2->{
+                    assertEquals(2L, quantity2);
+                })
+                .verifyComplete();
+        Mockito.verify(customerRepository,times(1)).count();
     }
 
 

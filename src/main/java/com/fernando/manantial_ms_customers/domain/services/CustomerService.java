@@ -20,7 +20,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase, GetMetricsUseCase, UpdateCustomerUseCase, DeleteCustomerUseCase, GetCustomerUseCase {
+public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase, GetMetricsUseCase, UpdateCustomerUseCase, DeleteCustomerUseCase, GetCustomerUseCase, GetCustomerPaginatedUseCase, GetCustomerCountUseCase {
 
     private final CustomerPersistencePort customerPersistencePort;
     private final List<CustomerRule> listCustomerRule;
@@ -103,5 +103,15 @@ public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase
     public Mono<Customer> getCustomer(String id) {
         return customerPersistencePort.getCustomer(id)
                 .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found: ".concat(id))));
+    }
+
+    @Override
+    public Flux<Customer> getPaginated(int page, int size) {
+        return customerPersistencePort.getCustomersPaged(page,size);
+    }
+
+    @Override
+    public Mono<Long> getCount() {
+        return customerPersistencePort.count();
     }
 }

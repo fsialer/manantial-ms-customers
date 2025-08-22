@@ -19,8 +19,9 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -49,6 +50,12 @@ class CustomerRestAdapterTest {
 
     @MockitoBean
     private GetCustomerUseCase getCustomerUseCase;
+
+    @MockitoBean
+    private GetCustomerPaginatedUseCase getCustomerPaginatedUseCase;
+
+    @MockitoBean
+    private GetCustomerCountUseCase getCustomerCountUseCase;
 
 
     @Test
@@ -188,5 +195,43 @@ class CustomerRestAdapterTest {
                 .jsonPath("$.birthDate").isEqualTo(customerResponse.birthDate());
         Mockito.verify(getCustomerUseCase,times(1)).getCustomer(anyString());
         Mockito.verify(customerRestMapper,times(1)).customerToCustomerResponse(any());
+    }
+
+    @Test
+    @DisplayName("When Customers Search By Page And Size Expect A List Customers Available Paginated")
+    void When_CustomersSearchByPageAndSize_Expect_AListCustomersAvailablePaginated(){
+        CustomerResponse customerResponse1= TestUtilCustomer.buildMockCustomerResponse();
+        CustomerResponse customerResponse2= TestUtilCustomer.buildMockCustomerResponse2();
+        Customer customer1= TestUtilCustomer.buildMockCustomer();
+        Customer customer2= TestUtilCustomer.buildMockCustomer2();
+
+        when(getCustomerPaginatedUseCase.getPaginated(anyInt(),anyInt())).thenReturn(Flux.just(customer1,customer2));
+        when(customerRestMapper.customerListToCustomerResponseList(anyList())).thenReturn(List.of(customerResponse1,customerResponse2));
+        when(getCustomerCountUseCase.getCount()).thenReturn(Mono.just(2L));
+
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/v1/customers/paginated")
+                        .queryParam("page", 1)
+                        .queryParam("size",2)
+                        .build())
+                .exchange()
+                .expectBody()
+                .jsonPath("$.content[0].id").isEqualTo(customerResponse1.id())
+                .jsonPath("$.content[0].name").isEqualTo(customerResponse1.name())
+                .jsonPath("$.content[0].lastName").isEqualTo(customerResponse1.lastName())
+                .jsonPath("$.content[0].age").isEqualTo(customerResponse1.age())
+                .jsonPath("$.content[0].birthDate").isEqualTo(customerResponse1.birthDate())
+                .jsonPath("$.content[0].lifeExpectancy").isEqualTo(customerResponse1.lifeExpectancy())
+                .jsonPath("$.content[1].id").isEqualTo(customerResponse2.id())
+                .jsonPath("$.content[1].name").isEqualTo(customerResponse2.name())
+                .jsonPath("$.content[1].lastName").isEqualTo(customerResponse2.lastName())
+                .jsonPath("$.content[1].age").isEqualTo(customerResponse2.age())
+                .jsonPath("$.content[1].birthDate").isEqualTo(customerResponse2.birthDate())
+                .jsonPath("$.content[1].lifeExpectancy").isEqualTo(customerResponse2.lifeExpectancy());
+
+        Mockito.verify(getCustomerPaginatedUseCase,times(1)).getPaginated(anyInt(),anyInt());
+        Mockito.verify(customerRestMapper,times(1)).customerListToCustomerResponseList(anyList());
+        Mockito.verify(getCustomerCountUseCase,times(1)).getCount();
     }
 }

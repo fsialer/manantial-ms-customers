@@ -8,6 +8,7 @@ import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.mo
 import com.fernando.manantial_ms_customers.infrastructure.adapters.output.persistence.models.CustomerDocument;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class TestUtilCustomer {
     public static Customer buildMockCustomer(){
@@ -49,6 +50,7 @@ public class TestUtilCustomer {
                 .name("John")
                 .lastName("Doe")
                 .age(34)
+                .createdAt(LocalDateTime.now())
                 .birthDate(LocalDate.of(1991,5,14))
                 .build();
     }
@@ -60,6 +62,7 @@ public class TestUtilCustomer {
                 .lastName("Doe")
                 .age(30)
                 .birthDate(LocalDate.of(1995,5,14))
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
