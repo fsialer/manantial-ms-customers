@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 @Component
 public class CustomerPersistenceMapperImpl implements CustomerPersistenceMapper {
     public Flux<Customer> customerDocumenFluxtoToCustomerFlux(Flux<CustomerDocument> customerDocumentFlux){
@@ -32,6 +35,7 @@ public class CustomerPersistenceMapperImpl implements CustomerPersistenceMapper 
                 .lastName(customer.getLastName())
                 .age(customer.getAge())
                 .birthDate(customer.getBirthDate())
+                .createdAt(LocalDateTime.now(ZoneOffset.UTC))
                 .build();
     }
 
