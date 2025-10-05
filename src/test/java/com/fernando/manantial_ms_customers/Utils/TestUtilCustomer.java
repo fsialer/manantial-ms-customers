@@ -19,6 +19,7 @@ public class TestUtilCustomer {
                 .age(34)
                 .birthDate(LocalDate.of(1991,5,14))
                 .lifeExpectancy(LocalDate.of(2067,5,14))
+                .pathFile("customers/541dikjd454dsplew/profile.jpg")
                 .build();
     }
 
