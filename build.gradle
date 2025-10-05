@@ -50,6 +50,8 @@ dependencies {
 	implementation("io.micrometer:micrometer-registry-prometheus")
 	implementation 'org.springframework.kafka:spring-kafka'
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+	implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.529')
+	implementation 'com.amazonaws:aws-java-sdk-s3'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -81,7 +83,8 @@ tasks.jacocoTestReport {
 				"**/alerts/*",
 				"**/alertsmanager/*.*",
 				"**/prometheus/*.*",
-				'**/config/*'
+				'**/config/*',
+				'**/enums/*'
 		]) }))
 	}
 }
