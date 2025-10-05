@@ -57,6 +57,9 @@ class CustomerRestAdapterTest {
     @MockitoBean
     private GetCustomerCountUseCase getCustomerCountUseCase;
 
+    @MockitoBean
+    private GetCustomerFileUseCase getCustomerFileUseCase;
+
 
     @Test
     @DisplayName("When Request Information Customer Expect A List Customers Available")
@@ -233,5 +236,26 @@ class CustomerRestAdapterTest {
         Mockito.verify(getCustomerPaginatedUseCase,times(1)).getPaginated(anyInt(),anyInt());
         Mockito.verify(customerRestMapper,times(1)).customerListToCustomerResponseList(anyList());
         Mockito.verify(getCustomerCountUseCase,times(1)).getCount();
+    }
+
+    @Test
+    @DisplayName("When Customer File Exists Expect Download File")
+    void When_CustomerFileExists_Expect_DownloadFile(){
+        byte[] fileContent = "PDF content".getBytes();
+        when(getCustomerFileUseCase.getFile(anyString())).thenReturn(Mono.just(fileContent));
+
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/v1/customers/download")
+                        .queryParam("id", "1")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType("application/pdf")
+                .expectHeader().valueEquals("Content-Disposition", "attachment; filename=customer.pdf")
+                .expectBody(byte[].class)
+                .isEqualTo(fileContent);
+
+        Mockito.verify(getCustomerFileUseCase, times(1)).getFile("1");
     }
 }

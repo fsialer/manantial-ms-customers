@@ -1,12 +1,13 @@
 package com.fernando.manantial_ms_customers.domain.services;
 
 import com.fernando.manantial_ms_customers.Utils.TestUtilCustomer;
-import com.fernando.manantial_ms_customers.application.ports.input.GetCustomerUseCase;
 import com.fernando.manantial_ms_customers.application.ports.output.CalculateMetricsPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerEventPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerPersistencePort;
+import com.fernando.manantial_ms_customers.application.ports.output.StorageOutputPort;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerNotFoundException;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerRuleException;
+import com.fernando.manantial_ms_customers.domain.exceptions.PathNotFoundException;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
 import com.fernando.manantial_ms_customers.domain.models.Customer;
 import com.fernando.manantial_ms_customers.domain.models.Metric;
@@ -43,6 +44,9 @@ class CustomerServicesTest {
 
     @Mock
     private CustomerEventPort customerEventPort;
+
+    @Mock
+    private StorageOutputPort storageOutputPort;
 
     @InjectMocks
     private CustomerService customerService;
@@ -330,6 +334,77 @@ class CustomerServicesTest {
                 })
                 .verifyComplete();
         Mockito.verify(customerPersistencePort,times(1)).count();
+    }
+
+    @Test
+    @DisplayName("When Customer Exists With File Path Expect File Content")
+    void When_CustomerExistsWithFilePath_Expect_FileContent(){
+        Customer customer = TestUtilCustomer.buildMockCustomer();
+        customer.setPathFile("/files/customer-123.pdf");
+        byte[] expectedFileContent = "file content".getBytes();
+        
+        when(customerPersistencePort.getCustomer(anyString())).thenReturn(Mono.just(customer));
+        when(storageOutputPort.getFile(anyString())).thenReturn(expectedFileContent);
+        
+        Mono<byte[]> fileMono = customerService.getFile("1");
+        
+        StepVerifier.create(fileMono)
+                .expectNext(expectedFileContent)
+                .verifyComplete();
+        
+        verify(customerPersistencePort, times(1)).getCustomer("1");
+        verify(storageOutputPort, times(1)).getFile("/files/customer-123.pdf");
+    }
+
+    @Test
+    @DisplayName("Expect CustomerNotFoundException When Customer Not Found For File")
+    void Expect_CustomerNotFoundException_When_CustomerNotFoundForFile(){
+        when(customerPersistencePort.getCustomer(anyString())).thenReturn(Mono.empty());
+        
+        Mono<byte[]> fileMono = customerService.getFile("1");
+        
+        StepVerifier.create(fileMono)
+                .expectError(CustomerNotFoundException.class)
+                .verify();
+        
+        verify(customerPersistencePort, times(1)).getCustomer("1");
+        verify(storageOutputPort, never()).getFile(anyString());
+    }
+
+    @Test
+    @DisplayName("Expect PathNotDefinedException When Customer Has No File Path")
+    void Expect_PathNotDefinedException_When_CustomerHasNoFilePath(){
+        Customer customer = TestUtilCustomer.buildMockCustomer();
+        customer.setPathFile(null);
+        
+        when(customerPersistencePort.getCustomer(anyString())).thenReturn(Mono.just(customer));
+        
+        Mono<byte[]> fileMono = customerService.getFile("1");
+        
+        StepVerifier.create(fileMono)
+                .expectError(PathNotFoundException.class)
+                .verify();
+        
+        verify(customerPersistencePort, times(1)).getCustomer("1");
+        verify(storageOutputPort, never()).getFile(anyString());
+    }
+
+    @Test
+    @DisplayName("Expect PathNotDefinedException When Customer Has Empty File Path")
+    void Expect_PathNotDefinedException_When_CustomerHasEmptyFilePath(){
+        Customer customer = TestUtilCustomer.buildMockCustomer();
+        customer.setPathFile("");
+        
+        when(customerPersistencePort.getCustomer(anyString())).thenReturn(Mono.just(customer));
+        
+        Mono<byte[]> fileMono = customerService.getFile("1");
+        
+        StepVerifier.create(fileMono)
+                .expectError(PathNotFoundException.class)
+                .verify();
+        
+        verify(customerPersistencePort, times(1)).getCustomer("1");
+        verify(storageOutputPort, never()).getFile(anyString());
     }
 
 }

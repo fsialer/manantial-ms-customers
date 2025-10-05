@@ -48,6 +48,7 @@ public class CustomerPersistenceMapperImpl implements CustomerPersistenceMapper 
                             .lastName(customer.getLastName())
                             .age(customer.getAge())
                             .birthDate(customer.getBirthDate())
+                            .pathFile(customer.getPathFile())
                     .build())
         );
     }

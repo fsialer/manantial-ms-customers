@@ -3,6 +3,7 @@ package com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest;
 
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerNotFoundException;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerRuleException;
+import com.fernando.manantial_ms_customers.domain.exceptions.PathNotFoundException;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.models.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -65,6 +66,20 @@ public class GlobalControllerAdvice {
                 .code(CUSTOMER_NOT_FOUND.getCode())
                 .type(FUNCTIONAL)
                 .message(CUSTOMER_NOT_FOUND.getMessage())
+                .details(List.of(e.getMessage()))
+                .timestamp(LocalDate.now().toString())
+                .build());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(PathNotFoundException.class)
+    public Mono<ErrorResponse> handlePathNotFoundException(
+            PathNotFoundException e) {
+        log.warn("⚠️ Warning by code rule ({}): {}",PATH_NOOT_FOUND.getCode(),e.getMessage());
+        return Mono.just(ErrorResponse.builder()
+                .code(PATH_NOOT_FOUND.getCode())
+                .type(FUNCTIONAL)
+                .message(PATH_NOOT_FOUND.getMessage())
                 .details(List.of(e.getMessage()))
                 .timestamp(LocalDate.now().toString())
                 .build());

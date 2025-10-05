@@ -20,8 +20,8 @@ public class CustomerEventAdapter implements CustomerEventPort {
     }
 
     @Override
-    public void publishCustomerDeleted(String id) {
-        this.sendMessage("delete-customer-topic",id);
+    public void publishCustomerDeleted(String path) {
+        this.sendMessage("delete-customer-topic",path);
     }
 
     private <T> void sendMessage(String topic, T message) {

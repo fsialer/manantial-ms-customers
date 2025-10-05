@@ -11,7 +11,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -35,6 +39,7 @@ public class CustomerRestAdapter {
     private final GetCustomerUseCase getCustomerUseCase;
     private final GetCustomerPaginatedUseCase getCustomerPaginatedUseCase;
     private final GetCustomerCountUseCase getCustomerCountUseCase;
+    private final GetCustomerFileUseCase getCustomerFileUseCase;
 
     @GetMapping
     @Operation(summary = "Find all customer available")
@@ -107,5 +112,20 @@ public class CustomerRestAdapter {
                             customers, page, size, totalElements, totalPages
                     );
                 });
+    }
+
+    @GetMapping("/download")
+    public Mono<ResponseEntity<Resource>> downloadFile(
+            @RequestParam String id
+    ){
+        return
+                getCustomerFileUseCase.getFile(id)
+                        .map(customerFile->{
+                            ByteArrayResource resource = new ByteArrayResource(customerFile);
+                            return ResponseEntity.ok()
+                                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=customer.pdf")
+                                    .contentType(MediaType.parseMediaType("application/pdf"))
+                                    .body(resource);
+                        });
     }
 }

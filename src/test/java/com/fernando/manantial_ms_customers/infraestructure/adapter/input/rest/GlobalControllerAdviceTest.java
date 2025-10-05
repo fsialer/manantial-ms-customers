@@ -4,6 +4,7 @@ import com.fernando.manantial_ms_customers.Utils.TestUtilCustomer;
 import com.fernando.manantial_ms_customers.application.ports.input.*;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerNotFoundException;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerRuleException;
+import com.fernando.manantial_ms_customers.domain.exceptions.PathNotFoundException;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
 import com.fernando.manantial_ms_customers.domain.models.Customer;
 import com.fernando.manantial_ms_customers.infrastructure.adapters.input.rest.CustomerRestAdapter;
@@ -60,6 +61,9 @@ class GlobalControllerAdviceTest {
 
     @MockitoBean
     private GetCustomerCountUseCase getCustomerCountUseCase;
+
+    @MockitoBean
+    private GetCustomerFileUseCase getCustomerFileUseCase;
 
     @Test
     @DisplayName("Expect WebExchangeBindException When Name Customer Is Not Defined")
@@ -182,6 +186,24 @@ class GlobalControllerAdviceTest {
         Mockito.verify(updateCustomerUseCase,times(1)).update(anyString(),any(Customer.class));
         Mockito.verify(customerRestMapper,times(1)).customerRequestToCustomer(any(CustomerRequest.class));
         Mockito.verify(customerRestMapper,times(0)).customerToCustomerResponse(any(Customer.class));
+    }
+
+    @Test
+    @DisplayName("Expect PathNotFoundException When Path Is Not Found")
+    void Expect_PathNotFoundException_When_PathIsNotFound(){
+        when(getCustomerFileUseCase.getFile(anyString())).thenReturn(Mono.error(new PathNotFoundException("Path not found.")));
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/v1/customers/download")
+                        .queryParam("id", "1")
+                        .build())
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody(ErrorResponse.class)
+                .value(response->{
+                    assertEquals(response.code(),PATH_NOOT_FOUND.getCode());
+                    assertEquals(response.message(),PATH_NOOT_FOUND.getMessage());
+                });
     }
 
 }

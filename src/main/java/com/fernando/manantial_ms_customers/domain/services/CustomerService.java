@@ -4,7 +4,9 @@ import com.fernando.manantial_ms_customers.application.ports.input.*;
 import com.fernando.manantial_ms_customers.application.ports.output.CalculateMetricsPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerEventPort;
 import com.fernando.manantial_ms_customers.application.ports.output.CustomerPersistencePort;
+import com.fernando.manantial_ms_customers.application.ports.output.StorageOutputPort;
 import com.fernando.manantial_ms_customers.domain.exceptions.CustomerNotFoundException;
+import com.fernando.manantial_ms_customers.domain.exceptions.PathNotFoundException;
 import com.fernando.manantial_ms_customers.domain.exceptions.RuleStrategyException;
 import com.fernando.manantial_ms_customers.domain.models.Customer;
 import com.fernando.manantial_ms_customers.domain.models.Metric;
@@ -20,12 +22,13 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase, GetMetricsUseCase, UpdateCustomerUseCase, DeleteCustomerUseCase, GetCustomerUseCase, GetCustomerPaginatedUseCase, GetCustomerCountUseCase {
+public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase, GetMetricsUseCase, UpdateCustomerUseCase, DeleteCustomerUseCase, GetCustomerUseCase, GetCustomerPaginatedUseCase, GetCustomerCountUseCase, GetCustomerFileUseCase {
 
     private final CustomerPersistencePort customerPersistencePort;
     private final List<CustomerRule> listCustomerRule;
     private final CalculateMetricsPort calculateMetricsPort;
     private final CustomerEventPort customerEventPort;
+    private final StorageOutputPort storageOutputPort;
 
     @Override
     public Flux<Customer> getCustomers() {
@@ -94,8 +97,8 @@ public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase
     public Mono<Void> delete(String id) {
         return customerPersistencePort.getCustomer(id)
                 .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found: ".concat(id))))
-                .flatMap(customer->customerPersistencePort.deleteCustomer(id))
-                .doOnSuccess(unused -> customerEventPort.publishCustomerDeleted(id))
+                .flatMap(customer->customerPersistencePort.deleteCustomer(id)
+                        .doOnSuccess(unused -> customerEventPort.publishCustomerDeleted(customer.getPathFile())))
                 .then();
     }
 
@@ -113,5 +116,17 @@ public class CustomerService implements GetCustomersUseCase, SaveCustomerUseCase
     @Override
     public Mono<Long> getCount() {
         return customerPersistencePort.count();
+    }
+
+    @Override
+    public Mono<byte[]> getFile(String id) {
+        return customerPersistencePort.getCustomer(id)
+                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found: ".concat(id))))
+                .flatMap(customer->{
+                    if(customer.getPathFile()==null || customer.getPathFile().isEmpty()){
+                        return Mono.error(new PathNotFoundException("Customer file not found: ".concat(id)));
+                    }
+                    return Mono.just(storageOutputPort.getFile(customer.getPathFile()));
+                });
     }
 }

@@ -10,7 +10,8 @@ public enum ErrorCatalog {
     CUSTOMER_BAD_PARAMETER("CUSTOMER_001", "Invalid parameters for creation customer"),
     CUSTOMER_RULE("CUSTOMER_002","A rule is not valid"),
     CUSTOMER_RULE_STRATEGY("CUSTOMER_003","A code rule is not valid"),
-    CUSTOMER_NOT_FOUND("CUSTOMER_004","Customer not found.");
+    CUSTOMER_NOT_FOUND("CUSTOMER_004","Customer not found."),
+    PATH_NOOT_FOUND("CUSTOMER_005","Path not found.");;
     private final String code;
     private final String message;
 }

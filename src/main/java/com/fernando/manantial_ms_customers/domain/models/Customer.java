@@ -18,4 +18,5 @@ public class Customer {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthDate;
     private LocalDate lifeExpectancy;
+    private String pathFile;
 }
